@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-05-08
+
+### Added
+
+- [Home work 4] Odometry parameters calculation
+- Pull request template  
+
+
 Усі помітні зміни в цьому репо фіксуються тут.
 Формат - [Keep a Changelog](https://keepachangelog.com/uk/1.1.0/), дати в ISO 8601.
 
