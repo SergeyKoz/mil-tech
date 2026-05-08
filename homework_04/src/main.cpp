@@ -8,7 +8,7 @@ struct DeltaTelemetry {
     const int ticksPerRevolution = 1024;
     const float wheelRadius = 0.3f;
     const float wheelbase = 1.0f;
-    float time;
+    int time;
     float distance;
     float theta;
 };
