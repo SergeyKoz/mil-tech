@@ -55,6 +55,51 @@
       }
     },
     {
+      "label": "CMake: configure and build debug wit sanitaze",
+      "type": "shell",
+      "command": "cmake --preset sanitizer && cmake --build --preset sanitizer",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "CMake: run sanitazer",
+      "type": "shell",
+      "command": "LSAN_OPTIONS=verbosity=1:log_threads=1 ASAN_OPTIONS=detect_leaks=1 ./build/debug/sanitize/homework_05/telemetry_check ${workspaceFolder}/homework_05/data/good.txt",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "CMake: run valgrind",
+      "type": "shell",
+      "command": "valgrind --tool=memcheck --leak-check=full ./build/debug/sanitize/homework_05/telemetry_check ${workspaceFolder}/homework_05/data/good.txt",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
       // Clean task навмисно простий: видаляється тільки локальна build директорія.
       "label": "CMake: clean build directory",
       "type": "shell",

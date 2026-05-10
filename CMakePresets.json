@@ -35,6 +35,18 @@
       }
     },
     {
+      "name": "sanitizer",
+      "displayName": "Sanitizer",
+      "description": "Sanitizer build build/debug/sanitize.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/debug/sanitize",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-omit-frame-pointer",
+        "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined"
+      }
+    },
+    {
       "name": "aarch64-debug",
       "displayName": "ARM64 Debug",
       "description": "Cross-compile debug build для Raspberry Pi / Radxa / Jetson через aarch64-linux-gnu toolchain.",
@@ -64,6 +76,12 @@
       "displayName": "Build Release",
       "description": "Build release preset after configure.",
       "configurePreset": "release"
+    },
+    {
+      "name": "sanitizer",
+      "displayName": "Build wit Sanitizer",
+      "description": "Зібрати Sanitize debug preset після configure.",
+      "configurePreset": "sanitizer"
     },
     {
       "name": "aarch64-debug",
