@@ -115,9 +115,9 @@ void validate_frame_params(int frameIndex, const Frame& frame) {
 }
 
 void validate_frame_sequence_params(int frameIndex, const Frame& frame, const Frame& previous_frame) {   
-    if (frame.timestamp_ms < previous_frame.timestamp_ms) {
+    if (frame.timestamp_ms <= previous_frame.timestamp_ms) {
         throw std::runtime_error(
-            std::format("Frame {} has wrong timestamp sequence {} < {}", frameIndex, frame.timestamp_ms, previous_frame.timestamp_ms)
+            std::format("Frame {} has wrong timestamp sequence {} <= {}", frameIndex, frame.timestamp_ms, previous_frame.timestamp_ms)
         );
     }
 
