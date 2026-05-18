@@ -52,7 +52,12 @@ jobs:
           # на runner-і для runCmd.
           push: never
           runCmd: |
+            set -euo pipefail
+            make format-ci
             cmake --preset debug
             cmake --build --preset debug
             cmake --preset aarch64-debug
             cmake --build --preset aarch64-debug
+            cmake --build --preset debug --target ballistics_cli --target ballistics_tests
+            make test-ci
+            make quality-ci

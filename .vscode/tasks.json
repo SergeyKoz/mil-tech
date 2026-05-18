@@ -55,7 +55,7 @@
       }
     },
     {
-      "label": "CMake: configure and build debug wit sanitaze",
+      "label": "CMake: configure and build debug with sanitaze",
       "type": "shell",
       "command": "cmake --preset sanitizer && cmake --build --preset sanitizer",
       "group": {
@@ -70,7 +70,7 @@
       }
     },
     {
-      "label": "CMake: run sanitazer",
+      "label": "CMake: run sanitazer homework_05",
       "type": "shell",
       "command": "LSAN_OPTIONS=verbosity=1:log_threads=1 ASAN_OPTIONS=detect_leaks=1 ./build/debug/sanitize/homework_05/telemetry_check ${workspaceFolder}/homework_05/data/good.txt",
       "group": {
@@ -85,9 +85,57 @@
       }
     },
     {
-      "label": "CMake: run valgrind",
+      "label": "CMake: run valgrind homework_05",
       "type": "shell",
       "command": "valgrind --tool=memcheck --leak-check=full ./build/debug/sanitize/homework_05/telemetry_check ${workspaceFolder}/homework_05/data/good.txt",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      // Default build task: Ctrl+Shift+B запускає debug preset, потім build.
+      "label": "CMake: configure and build ballistic_cli",
+      "type": "shell",
+      "command": "cmake --preset debug && cmake --build --preset debug --target ballistics_cli --target ballistics_tests",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "CMake: run sanitazer homework_06",
+      "type": "shell",
+      "command": "LSAN_OPTIONS=verbosity=1:log_threads=1 ASAN_OPTIONS=detect_leaks=1 ./build/debug/sanitize/homework_06/ballistics_cli ${workspaceFolder}/homework_06/data/good.txt",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "CMake: run valgrind homework_06",
+      "type": "shell",
+      "command": "valgrind --tool=memcheck --leak-check=full ./build/debug/sanitize/homework_06/ballistics_cli ${workspaceFolder}/homework_06/data/good.txt",
       "group": {
         "kind": "build",
         "isDefault": true
@@ -110,6 +158,20 @@
         "panel": "dedicated",
         "clear": true
       }
-    }
+    },
+    {
+      "label": "clang-tidy: analyze project",
+      "type": "shell",
+      "command": "run-clang-tidy -p build/debug 'homework_06/(src|include|tests)/.*\\.(cpp|cc|cxx|h|hpp)$'",
+      "group": "test",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
   ]
 }
