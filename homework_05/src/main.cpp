@@ -10,10 +10,14 @@ int main(int argc, char** argv) {
     }
 
     Frame frames[MAX_TELEMETRY_FRAMES];
-    const int frame_count = read_frames(argv[1], frames, MAX_TELEMETRY_FRAMES);
 
-    const Summary summary = summarize(frames, frame_count);
-    print_summary(summary);
-
+    try {
+        const int frame_count = read_frames(argv[1], frames, MAX_TELEMETRY_FRAMES);
+        const Summary summary = summarize(frames, frame_count);
+        print_summary(summary);
+    } catch (const std::runtime_error& exception) {
+        std::cerr << "telemetry_check error: " << exception.what() << '\n';
+        return 1;
+    }
     return 0;
 }
