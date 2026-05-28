@@ -1,32 +1,44 @@
+#include <iostream>
 #include "MissionProcessor.hpp"
 #include "MissionFactory.hpp"
-#include "ITargetsProvider.hpp"
-#include "ISimulationExport.hpp"
+#include "interfaces/ITargetsProvider.hpp"
+#include "interfaces/ISimulationExport.hpp"
 
 auto main() -> int
 {
-    auto factory = new MissionFactory();
-    auto ballisticsSolver = factory->createBallisticsSolver(SolverType::ANALYTICAL);
-    auto configLoader = factory->createConfigLoader(LoaderType::JSON);
-    auto targetProvider = factory->createTargetsProvider(ProviderType::JSON);
-    auto simulationExport = factory->createSimulationExport(ExportType::JSON);
+    auto* ballisticsSolver = MissionFactory::createBallisticsSolver(SolverType::ANALYTICAL);
+    auto* configLoader = MissionFactory::createConfigLoader(LoaderType::JSON);
+    auto* targetProvider = MissionFactory::createTargetsProvider(ProviderType::JSON);
+    auto* simulationExport = MissionFactory::createSimulationExport(ExportType::JSON);
 
-    auto mission = new MissionProcessor(*ballisticsSolver, *configLoader, *targetProvider, *simulationExport);
+    auto* mission = new MissionProcessor(*ballisticsSolver, *configLoader, *targetProvider, *simulationExport);
 
-    mission->init();
+    try {
+        mission->init();
 
-    while (mission->hasNext()) {
-        mission->step();
+        while (mission->hasNext()) {
+            mission->step();
+        }
+
+        mission->dumpResults();
     }
+    catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
 
-    mission->dumpResults();
+        delete mission;
+        delete ballisticsSolver;
+        delete configLoader;
+        delete targetProvider;
+        delete simulationExport;
+
+        return 1;
+    }
 
     delete mission;
     delete ballisticsSolver;
     delete configLoader;
     delete targetProvider;
     delete simulationExport;
-    delete factory;
 
     return 0;
 }

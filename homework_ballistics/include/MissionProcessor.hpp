@@ -1,10 +1,10 @@
 #pragma once
 
-#include "IBallisticsSolver.hpp"
-#include "IConfigLoader.hpp"
+#include <array>
+#include "interfaces/IBallisticsSolver.hpp"
+#include "interfaces/IConfigLoader.hpp"
 #include "common.hpp"
 
-struct Target;
 class ITargetsProvider;
 class IConfigLoader;
 class IBallisticsSolver;
@@ -12,24 +12,14 @@ class ISimulationExport;
 class TargetSelector;
 struct SelectedTarget;
 
-struct SimStep {
-    Coord pos;          // позиція дрона
-    float direction;    // напрямок (рад)
-    DroneStatus state;  // стан автомата (0-4)
-    int targetIdx;      // індекс поточної цілі
-    Coord dropPoint;    // точка скиду (куди летить дрон)
-    Coord aimPoint;     // куди впаде бомба (якщо скинути зараз)
-    Coord predictedTarget;
-    float speed;
-};
-
 class MissionProcessor {
   public:
+    static constexpr int MAX_STEPS = 5000;
     MissionProcessor(IBallisticsSolver& solver,
                      IConfigLoader& configLoader,
                      ITargetsProvider& targetProvider,
                      ISimulationExport& simulationExport);
-    void init();  //
+    void init();
     bool hasNext();
     void step();
     void reset();
@@ -38,8 +28,7 @@ class MissionProcessor {
     ~MissionProcessor();
 
   private:
-    static constexpr int MAX_STEPS = 5000;
-    SimStep out[MAX_STEPS];
+    std::array<SimStep, MAX_STEPS> out;
     DroneConfig droneConfig;
     SimStep simulationStep;
     IBallisticsSolver* solver;
@@ -54,8 +43,8 @@ class MissionProcessor {
     TargetSelector* targetSelector;
     void calcSimulationStep(const SelectedTarget& selectedTarget);
     bool isTargetHit(SimStep& simStep);
-    inline void doAcceleration(SimStep& simStep, float acceleration, float time, float attackSpeed);
-    inline void doDeceleration(SimStep& simStep, float acceleration, float time);
-    inline void doMoving(SimStep& simStep, float time);
-    inline void doTurning(SimStep& simStep, float turnAngle, float angleStep);
+    static inline void doAcceleration(SimStep& simStep, float acceleration, float time, float attackSpeed);
+    static inline void doDeceleration(SimStep& simStep, float acceleration, float time);
+    static inline void doMoving(SimStep& simStep, float time);
+    static inline void doTurning(SimStep& simStep, float turnAngle, float angleStep);
 };

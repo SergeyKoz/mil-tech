@@ -11,9 +11,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(FetchContent)
 FetchContent_Declare(
-    nlohmann_json
-    URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
-        DOWNLOAD_EXTRACT_TIMESTAMP ON)
+    nlohmann_json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+                      DOWNLOAD_EXTRACT_TIMESTAMP ON)
 FetchContent_MakeAvailable(nlohmann_json)
 
 # Один executable для задачі з UGV odometry.
@@ -23,11 +22,11 @@ target_sources(
     ballistics_app
     PRIVATE src/MissionFactory.cpp
             src/MissionProcessor.cpp
-            src/JsonTargetProvider.cpp
-            src/AnalyticalSolver.cpp
-            src/FileConfigLoader.cpp
-            src/JsonSimulationExport.cpp
-            src/AmmoProvider.cpp
+            src/providers/JsonTargetProvider.cpp
+            src/solvers/AnalyticalSolver.cpp
+            src/config/JsonConfigLoader.cpp
+            src/export/JsonSimulationExport.cpp
+            src/providers/AmmoProvider.cpp
             src/TargetSelector.cpp)
 
 target_include_directories(ballistics_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -38,5 +37,4 @@ target_link_libraries(ballistics_app PRIVATE nlohmann_json::nlohmann_json)
 # target_compile_options(ballistics_cli PRIVATE -Wall -Wextra -pedantic -Werror)
 target_compile_options(ballistics_app PRIVATE -Wall -Wextra -pedantic -Werror)
 
-# include(GoogleTest)
-# gtest_discover_tests(ballistics_tests)
+# include(GoogleTest) gtest_discover_tests(ballistics_tests)

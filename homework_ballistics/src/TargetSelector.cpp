@@ -1,9 +1,12 @@
 #include "TargetSelector.hpp"
-#include "IConfigLoader.hpp"
-#include "ITargetsProvider.hpp"
+#include "interfaces/ITargetsProvider.hpp"
 
 TargetSelector::TargetSelector(ITargetsProvider& targetProvider)
-  : targetProvider(&targetProvider)
+    : droneConfig(nullptr)
+    , targetProvider(&targetProvider)
+    , acceleration(0.F)
+    , fullAccelerationTime(0.F)
+    , angleStep(0.F)
 {
 }
 
@@ -15,12 +18,12 @@ void TargetSelector::init(const DroneConfig& droneConfig)
     angleStep = droneConfig.angleStep();
 };
 
-SelectedTarget TargetSelector::selectTarget(float currentTime, const SimStep& simulationStep, float dropDistance)
+auto TargetSelector::selectTarget(float currentTime, const SimStep& simulationStep, float dropDistance) -> SelectedTarget
 {
-    float minTotalTime = 0.f;
+    float minTotalTime = 0.F;
     int selectedTargetIndex = -1;
     Target* selectedTarget = nullptr;
-    Coord currentTargetPos;
+    Coord currentTargetPos{};
 
     for (int targetIndex = 0; targetIndex < targetProvider->getTargetsCount() - 1; targetIndex++) {
         Target target = targetProvider->getTarget(targetIndex);
@@ -28,7 +31,7 @@ SelectedTarget TargetSelector::selectTarget(float currentTime, const SimStep& si
 
         // define total time to reach target
         // totalTime time to stop + time to turn + time to accelerate + time to move
-        float timeToTurn{0.f};
+        float timeToTurn{0.F};
 
         // time to stop + time to turn + time to accelerate + time to move
         bool isNeedTurnAngle = false;
@@ -47,15 +50,16 @@ SelectedTarget TargetSelector::selectTarget(float currentTime, const SimStep& si
         float reEntryPath = calcReEntryPath(distanceToDropPoint, isNeedTurnAngle, simulationStep.speed, acceleration, *droneConfig);
 
         float totalTime =
-          reEntryPath > 0 ? calcReEntryTime(simulationStep.speed, reEntryPath, turnAngle, acceleration, fullAccelerationTime, *droneConfig)
-                          : calcEntryTime(simulationStep.speed,
-                                          simulationStep.state,
-                                          distanceToDropPoint,
-                                          isNeedTurnAngle,
-                                          acceleration,
-                                          fullAccelerationTime,
-                                          *droneConfig) +
-                              timeToTurn;
+            reEntryPath > 0
+                ? calcReEntryTime(simulationStep.speed, reEntryPath, turnAngle, acceleration, fullAccelerationTime, *droneConfig)
+                : calcEntryTime(simulationStep.speed,
+                                simulationStep.state,
+                                distanceToDropPoint,
+                                isNeedTurnAngle,
+                                acceleration,
+                                fullAccelerationTime,
+                                *droneConfig) +
+                      timeToTurn;
 
         if (totalTime < 0) {
             continue;
@@ -71,11 +75,11 @@ SelectedTarget TargetSelector::selectTarget(float currentTime, const SimStep& si
     return {.idx = selectedTargetIndex, .target = selectedTarget, .position = currentTargetPos, .timeToReachPosition = minTotalTime};
 };
 
-float TargetSelector::calcReEntryPath(
-  float distanceToDropPoint, bool isNeedTurnAngle, float speed, float acceleration, const DroneConfig& droneConfig)
+auto TargetSelector::calcReEntryPath(
+    float distanceToDropPoint, bool isNeedTurnAngle, float speed, float acceleration, const DroneConfig& droneConfig) -> float
 {
     // define reentry path
-    float reEntryPath = distanceToDropPoint < 0 ? -distanceToDropPoint : 0.f;
+    float reEntryPath = distanceToDropPoint < 0 ? -distanceToDropPoint : 0.F;
 
     if (!isNeedTurnAngle) {
         if (speed < droneConfig.attackSpeed) {
@@ -87,7 +91,7 @@ float TargetSelector::calcReEntryPath(
         }
     }
     else {
-        float stopingPath = 0.f;
+        float stopingPath = 0.F;
 
         if (speed > 0) {
             stopingPath = (speed * speed) / (2 * acceleration);
@@ -101,17 +105,17 @@ float TargetSelector::calcReEntryPath(
     return reEntryPath;
 };
 
-float TargetSelector::calcEntryTime(float speed,
-                                    DroneStatus state,
-                                    float distanceToDropPoint,
-                                    bool isNeedTurnAngle,
-                                    float acceleration,
-                                    float fullAccelerationTime,
-                                    const DroneConfig& droneConfig)
+auto TargetSelector::calcEntryTime(float speed,
+                                   DroneStatus state,
+                                   float distanceToDropPoint,
+                                   bool isNeedTurnAngle,
+                                   float acceleration,
+                                   float fullAccelerationTime,
+                                   const DroneConfig& droneConfig) -> float
 {
-    float timeToStop{0.f};
-    float timeToAccelerate{0.f};
-    float timeToMove{0.f};
+    float timeToStop{0.F};
+    float timeToAccelerate{0.F};
+    float timeToMove{0.F};
 
     // target Entry calculation
     if (state == STOPPED || state == TURNING) {
@@ -145,11 +149,15 @@ float TargetSelector::calcEntryTime(float speed,
     return timeToStop + timeToAccelerate + timeToMove;
 };
 
-float TargetSelector::calcReEntryTime(
-  float speed, float reEntryPath, float turnAngle, float acceleration, float fullAccelerationTime, const DroneConfig& droneConfig)
+auto TargetSelector::calcReEntryTime(float speed,
+                                     float reEntryPath,
+                                     float turnAngle,
+                                     float acceleration,
+                                     float fullAccelerationTime,
+                                     const DroneConfig& droneConfig) -> float
 {
-    float reEntryTimeToTurn = (2 * M_PI) / droneConfig.angularSpeed + turnAngle;  // 360
-    float timeToStop = 0.f;
+    auto reEntryTimeToTurn = static_cast<float>((2 * M_PI)) / droneConfig.angularSpeed + turnAngle;  // 360
+    float timeToStop = 0.F;
 
     if (speed > 0) {
         timeToStop = speed / acceleration;

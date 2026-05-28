@@ -1,23 +1,28 @@
 #include "MissionProcessor.hpp"
 #include "TargetSelector.hpp"
-#include "IConfigLoader.hpp"
-#include "ITargetsProvider.hpp"
-#include "ISimulationExport.hpp"
-#include "IBallisticsSolver.hpp"
+#include "interfaces/IConfigLoader.hpp"
+#include "interfaces/ITargetsProvider.hpp"
+#include "interfaces/ISimulationExport.hpp"
+#include "interfaces/IBallisticsSolver.hpp"
 
 MissionProcessor::MissionProcessor(IBallisticsSolver& solver,
                                    IConfigLoader& configLoader,
                                    ITargetsProvider& targetProvider,
                                    ISimulationExport& simulationExport)
-    : solver(&solver)
+    : out({})
+    , simulationStep{}
+    , solver(&solver)
     , targetProvider(&targetProvider)
     , configLoader(&configLoader)
     , simulationExport(&simulationExport)
-{
-    targetSelector = new TargetSelector(targetProvider);
-};
+    , acceleration(0.F)
+    , angleStep(0.F)
+    , currentStep(0)
+    , currentTime(0.F)
+    , dropParams{}
+    , targetSelector(new TargetSelector(targetProvider)){};
 
-void MissionProcessor::init()
+auto MissionProcessor::init() -> void
 {
     configLoader->load();
     droneConfig = configLoader->getConfig();
@@ -25,30 +30,30 @@ void MissionProcessor::init()
     targetSelector->init(droneConfig);
 
     currentStep = 0;
-    currentTime = 0.f;
+    currentTime = 0.F;
 
     angleStep = droneConfig.angleStep();
     acceleration = droneConfig.acceleration();
     dropParams = solver->calcDropParameters(droneConfig.ammo, droneConfig.attackSpeed, droneConfig.altitude);
 
     simulationStep = {.pos = droneConfig.startPos,    // позиція дрона
-                      .direction = 0.f,               // напрямок (рад)
+                      .direction = 0.F,               // напрямок (рад)
                       .state = STOPPED,               // стан автомата(0 - 4)
                       .targetIdx = -1,                // індекс поточної цілі
-                      .dropPoint = {0.f, 0.f},        // точка скиду (куди летить дрон)
-                      .aimPoint = {0.f, 0.f},         // куди впаде бомба (якщо скинути зараз)
-                      .predictedTarget = {0.f, 0.f},  // прогнозована позиція цілі
-                      .speed = 0.f};
+                      .dropPoint = {0.F, 0.F},        // точка скиду (куди летить дрон)
+                      .aimPoint = {0.F, 0.F},         // куди впаде бомба (якщо скинути зараз)
+                      .predictedTarget = {0.F, 0.F},  // прогнозована позиція цілі
+                      .speed = 0.F};
 };
 
-bool MissionProcessor::hasNext()
+auto MissionProcessor::hasNext() -> bool
 {
     if (currentStep >= MAX_STEPS + 1) {
         return false;
     }
 
     if (currentStep > 0) {
-        out[currentStep - 1] = simulationStep;
+        out.at(currentStep - 1) = simulationStep;
 
         if (isTargetHit(simulationStep)) {
             return false;
@@ -58,36 +63,36 @@ bool MissionProcessor::hasNext()
     return true;
 };
 
-void MissionProcessor::step()
+auto MissionProcessor::step() -> void
 {
     auto selectedTarget = targetSelector->selectTarget(currentTime, simulationStep, dropParams.distance);
     calcSimulationStep(selectedTarget);
 
     currentStep++;
-    currentTime += 0.1f;
+    currentTime += 0.1F;
 };
 
-void MissionProcessor::reset()
+auto MissionProcessor::reset() -> void
 {
     currentStep = 0;
-    currentTime = 0.f;
+    currentTime = 0.F;
 
     simulationStep = {.pos = droneConfig.startPos,    // позиція дрона
-                      .direction = 0.f,               // напрямок (рад)
+                      .direction = 0.F,               // напрямок (рад)
                       .state = STOPPED,               // стан автомата(0 - 4)
                       .targetIdx = -1,                // індекс поточної цілі
-                      .dropPoint = {0.f, 0.f},        // точка скиду (куди летить дрон)
-                      .aimPoint = {0.f, 0.f},         // куди впаде бомба (якщо скинути зараз)
-                      .predictedTarget = {0.f, 0.f},  // прогнозована позиція цілі
-                      .speed = 0.f};
+                      .dropPoint = {0.F, 0.F},        // точка скиду (куди летить дрон)
+                      .aimPoint = {0.F, 0.F},         // куди впаде бомба (якщо скинути зараз)
+                      .predictedTarget = {0.F, 0.F},  // прогнозована позиція цілі
+                      .speed = 0.F};
 };
 
-void MissionProcessor::changeSolver(IBallisticsSolver& solver)
+auto MissionProcessor::changeSolver(IBallisticsSolver& solver) -> void
 {
     this->solver = &solver;
 }
 
-void MissionProcessor::calcSimulationStep(const SelectedTarget& selectedTarget)
+auto MissionProcessor::calcSimulationStep(const SelectedTarget& selectedTarget) -> void
 {
     simulationStep.targetIdx = selectedTarget.idx;
 
@@ -105,7 +110,7 @@ void MissionProcessor::calcSimulationStep(const SelectedTarget& selectedTarget)
 
     float targetDirection = simulationStep.pos.direction(simulationStep.predictedTarget);
     float turnAngle = targetDirection - simulationStep.direction;
-    bool isNeedTurnAngle;
+    bool isNeedTurnAngle = false;
 
     if (simulationStep.state == TURNING) {
         isNeedTurnAngle = std::fabs(turnAngle) > angleStep;
@@ -117,7 +122,7 @@ void MissionProcessor::calcSimulationStep(const SelectedTarget& selectedTarget)
     // need reentry
     float distanceToTarget = simulationStep.pos.distance(simulationStep.predictedTarget);
     float distanceToDropPoint = distanceToTarget - dropParams.distance;
-    float reEntryPath = distanceToDropPoint < 0 ? -distanceToDropPoint : 0.f;
+    float reEntryPath = distanceToDropPoint < 0 ? -distanceToDropPoint : 0.F;
 
     if (!isNeedTurnAngle) {
         if (simulationStep.speed < droneConfig.attackSpeed) {
@@ -130,7 +135,7 @@ void MissionProcessor::calcSimulationStep(const SelectedTarget& selectedTarget)
         }
     }
     else {
-        float stopingPath = 0.f;
+        float stopingPath = 0.F;
 
         if (simulationStep.speed > 0) {
             stopingPath = (simulationStep.speed * simulationStep.speed) / (2 * acceleration);
@@ -202,7 +207,7 @@ void MissionProcessor::calcSimulationStep(const SelectedTarget& selectedTarget)
     simulationStep.dropPoint = simulationStep.pos.move(targetDistance - dropParams.distance, simulationStep.direction);
 };
 
-bool MissionProcessor::isTargetHit(SimStep& simStep)
+auto MissionProcessor::isTargetHit(SimStep& simStep) -> bool
 {
     // check hitRadius
     Coord interpolatedPos = targetProvider->getTarget(simStep.targetIdx).interpolate(currentTime, droneConfig.arrayTimeStep);
@@ -215,13 +220,13 @@ bool MissionProcessor::isTargetHit(SimStep& simStep)
         }
     }
     else {
-        simStep.aimPoint = {0.f, 0.f};
+        simStep.aimPoint = {0.F, 0.F};
     }
 
     return false;
 }
 
-void MissionProcessor::dumpResults()
+auto MissionProcessor::dumpResults() -> void
 {
     simulationExport->dumpResults(currentStep, out);
 }
@@ -231,9 +236,9 @@ MissionProcessor::~MissionProcessor()
     delete targetSelector;
 };
 
-void MissionProcessor::doAcceleration(SimStep& simStep, float acceleration, float time, float attackSpeed)
+auto MissionProcessor::doAcceleration(SimStep& simStep, float acceleration, float time, float attackSpeed) -> void
 {
-    float path = simStep.speed * time + 0.5f * acceleration * time * time;
+    float path = simStep.speed * time + 0.5F * acceleration * time * time;
     simStep.pos = simStep.pos.move(path, simStep.direction);
 
     simStep.speed += acceleration * time;
@@ -246,13 +251,13 @@ void MissionProcessor::doAcceleration(SimStep& simStep, float acceleration, floa
 
 inline void MissionProcessor::doDeceleration(SimStep& simStep, float acceleration, float time)
 {
-    float path = simStep.speed * time - 0.5f * acceleration * time * time;
+    float path = simStep.speed * time - 0.5F * acceleration * time * time;
     simStep.pos = simStep.pos.move(path, simStep.direction);
     simStep.speed -= acceleration * time;
 
-    if (simStep.speed <= 0.f) {
+    if (simStep.speed <= 0.F) {
         simStep.state = STOPPED;
-        simStep.speed = 0.f;
+        simStep.speed = 0.F;
     }
 }
 

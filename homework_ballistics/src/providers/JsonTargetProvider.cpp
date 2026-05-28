@@ -1,12 +1,16 @@
-#include "JsonTargetProvider.hpp"
-#include "ITargetsProvider.hpp"
+#include "providers/JsonTargetProvider.hpp"
+#include "common.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
+#include <vector>
 
 using json = nlohmann::json;
 
-JsonTargetProvider::JsonTargetProvider(const char* jsonFilePath)
-  : jsonFilePath(jsonFilePath)
+JsonTargetProvider::JsonTargetProvider(std::string jsonFilePath)
+    : jsonFilePath(std::move(jsonFilePath))
+    , targetsCount(0)
+    , timeSteps(0)
+    , targets({})
 {
 }
 
@@ -19,14 +23,15 @@ void JsonTargetProvider::load()
     }
 
     try {
-        json targetsJson = json::parse(jsonFile);
+        auto targetsJson = json::parse(jsonFile);
 
         targetsCount = targetsJson["targetCount"];
         timeSteps = targetsJson["timeSteps"];
-        targets = new Target[targetsCount];
+
+        targets.resize(targetsCount);
 
         for (int i = 0; i < targetsCount; i++) {
-            auto targetCoords = new Coord[timeSteps];
+            std::vector<Coord> targetCoords(timeSteps);
 
             for (int j = 0; j < timeSteps; j++) {
                 targetCoords[j].x = targetsJson["targets"][i]["positions"][j]["x"];
@@ -43,26 +48,21 @@ void JsonTargetProvider::load()
     jsonFile.close();
 }
 
-Target JsonTargetProvider::getTarget(int index)
+auto JsonTargetProvider::getTarget(int index) -> Target
 {
     if (index < 0 || index >= targetsCount) {
         throw std::out_of_range("Target index out of range");
     }
 
-    return targets[index];
+    return targets.at(index);
 }
 
-int JsonTargetProvider::getTargetsCount()
+auto JsonTargetProvider::getTargetsCount() -> int
 {
     return targetsCount;
 }
 
-int JsonTargetProvider::getTimeSteps()
+auto JsonTargetProvider::getTimeSteps() -> int
 {
     return timeSteps;
-}
-
-JsonTargetProvider::~JsonTargetProvider()
-{
-    delete[] targets;
 }
