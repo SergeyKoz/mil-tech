@@ -160,10 +160,28 @@
       }
     },
     {
-      "label": "clang-tidy: analyze project",
+      "label": "CMake: clang-tidy: analyze homework_06 project",
       "type": "shell",
       "command": "run-clang-tidy -p build/debug 'homework_06/(src|include|tests)/.*\\.(cpp|cc|cxx|h|hpp)$'",
       "group": "test",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      // Default build task: Ctrl+Shift+B запускає debug preset, потім build.
+      "label": "CMake: configure and build ballistics_app",
+      "type": "shell",
+      "command": "cmake --preset debug && cmake --build --preset debug --target ballistics_app",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
       "problemMatcher": [
         "$gcc"
       ],
