@@ -1,5 +1,5 @@
 
-#include "providers/AmmoProvider.hpp"
+#include "providers/JsonAmmoProvider.hpp"
 #include <cstddef>
 #include <nlohmann/json.hpp>
 #include <string>
@@ -8,12 +8,12 @@
 
 using json = nlohmann::json;
 
-AmmoProvider::AmmoProvider(std::string filePath)
+JsonAmmoProvider::JsonAmmoProvider(std::string filePath)
     : configFilePath(std::move(filePath))
 {
 }
 
-auto AmmoProvider::getAmmoList() -> std::map<std::string, AmmoParams>
+auto JsonAmmoProvider::getAmmoList() -> std::map<std::string, AmmoParams>
 {
     std::ifstream ammoFile{configFilePath};
 

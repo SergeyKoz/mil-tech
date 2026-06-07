@@ -23,10 +23,11 @@ target_sources(
     PRIVATE src/MissionFactory.cpp
             src/MissionProcessor.cpp
             src/providers/JsonTargetProvider.cpp
+            src/providers/JsonAmmoProvider.cpp
             src/solvers/AnalyticalSolver.cpp
+            src/solvers/TableSolver.cpp
             src/config/JsonConfigLoader.cpp
             src/export/JsonSimulationExport.cpp
-            src/providers/AmmoProvider.cpp
             src/TargetSelector.cpp)
 
 target_include_directories(ballistics_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

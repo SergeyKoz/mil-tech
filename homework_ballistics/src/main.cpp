@@ -6,8 +6,8 @@
 
 auto main() -> int
 {
-    auto* ballisticsSolver = MissionFactory::createBallisticsSolver(SolverType::ANALYTICAL);
-    auto* configLoader = MissionFactory::createConfigLoader(LoaderType::JSON);
+    auto* ballisticsSolver = MissionFactory::createBallisticsSolver(SolverType::TABLE);
+    auto* configLoader = MissionFactory::createConfigLoader(ConfigLoaderType::JSON, AmmoLoaderType::JSON);
     auto* targetProvider = MissionFactory::createTargetsProvider(ProviderType::JSON);
     auto* simulationExport = MissionFactory::createSimulationExport(ExportType::JSON);
 
