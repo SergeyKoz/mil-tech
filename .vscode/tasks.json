@@ -191,5 +191,23 @@
         "clear": true
       }
     },
+    {
+      // Default build task: Ctrl+Shift+B запускає debug preset, потім build.
+      "label": "CMake: configure and build simulation",
+      "type": "shell",
+      "command": "cmake --preset debug && cmake --build --preset debug --target simulation",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
   ]
 }
