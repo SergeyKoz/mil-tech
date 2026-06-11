@@ -127,9 +127,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/build/debug/homework_06/ballistics_cli",
       "args": [
-        "VOG-17",
-        "10",
-        "100"
+        "homework_06/data/input.txt",
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
