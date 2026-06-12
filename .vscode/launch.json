@@ -104,7 +104,19 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/debug/homework_03/simulation",
-      "args": [],
+      "args": [
+        "extreme"
+        // "base",
+        // "ellips",
+        // "eights",
+        // "flowers",
+        // "lissajou
+        // "quick"
+        // "heavy"
+        // "floating"
+        // "cardioid"
+        // "extreme"
+      ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
