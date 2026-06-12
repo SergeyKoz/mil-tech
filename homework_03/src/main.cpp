@@ -44,6 +44,19 @@ struct Coord {
         return result;
     }
 
+    Coord operator*(float scalar) const { return {x * scalar, y * scalar}; }
+
+    Coord operator/(float scalar) const { return {x / scalar, y / scalar}; }
+
+    bool operator==(const Coord& other) const
+    {
+        const float epsilon = 1e-5f;
+
+        return std::abs(x - other.x) < epsilon && std::abs(y - other.y) < epsilon;
+    }
+
+    bool operator!=(const Coord& other) const { return !(*this == other); }
+
     Coord move(float distance, float direction) { return {x + distance * std::cos(direction), y + distance * std::sin(direction)}; }
 
     float distance(const Coord& other) const { return std::sqrt(std::pow((other.x - x), 2) + std::pow((other.y - y), 2)); }
@@ -91,6 +104,17 @@ struct SimStep {
     Coord aimPoint;   // куди впаде бомба (якщо скинути зараз)
     Coord predictedTarget;
     float speed;
+
+    void turn(float angle)
+    {
+        direction += angle;
+
+        direction = std::fmod(direction, 2.0f * M_PI);
+
+        if (direction < 0.0f) {
+            direction += 2.0f * M_PI;
+        }
+    }
 };
 
 enum DroneStatus { STOPPED = 0, ACCELERATING = 1, DECELERATING = 2, TURNING = 3, MOVING = 4 };
@@ -127,13 +151,27 @@ void from_json(const json& j, DroneConfig& droneConfig);
 AmmoParams* loadAmmoParameters(std::ifstream& ammoFile, int& outCount);
 Coord** loadTargets(std::ifstream& targetsFile, int& outCount, int& outTimeSteps);
 
-const int MAX_STEPS{5000};
+const int MAX_STEPS{10000};
 SimStep out[MAX_STEPS];
 
-int main()
+int main(int argc, char** argv)
 {
+    const char* simType = argv[1];
+    // "base",
+    // "ellips",
+    // "eights",
+    // "flowers",
+    // "lissajou
+    // "quick"
+    // "heavy"
+    // "floating"
+    // "cardioid"
+    // "extreme"
+
+    auto configFolder = "homework_03/data/" + (simType != "" ? "simulations/" + std::string(simType) + "/" : "");
+
     // read config
-    std::ifstream configFile{"homework_03/data/config.json", std::ios::out};
+    std::ifstream configFile{configFolder + "config.json", std::ios::out};
 
     if (!configFile.is_open()) {
         std::cerr << "Unable to open config file\n";
@@ -177,7 +215,7 @@ int main()
     ammoFile.close();
 
     // read targets
-    std::ifstream targetsFile{"homework_03/data/targets.json", std::ios::out};
+    std::ifstream targetsFile{configFolder + "targets.json", std::ios::out};
 
     if (!targetsFile.is_open()) {
         std::cerr << "Unable to open targets file\n";
@@ -199,7 +237,7 @@ int main()
     AmmoParams ammo;
     bool ammoDefined = false;
 
-    for (int i = 0; i < targetsCount; i++) {
+    for (int i = 0; i < ammoCount; i++) {
         if (strcmp(ammos[i].name, droneConfig.ammoName) == 0) {
             ammo = ammos[i];
             ammoDefined = true;
@@ -214,20 +252,21 @@ int main()
         return 1;
     }
     //-------------
-    SimStep simStep = {.pos = droneConfig.startPos,    // позиція дрона
-                       .direction = 0.f,               // напрямок (рад)
-                       .state = STOPPED,               // стан автомата(0 - 4)
-                       .targetIdx = -1,                // індекс поточної цілі
-                       .dropPoint = {0.f, 0.f},        // точка скиду (куди летить дрон)
-                       .aimPoint = {0.f, 0.f},         // куди впаде бомба (якщо скинути зараз)
-                       .predictedTarget = {0.f, 0.f},  // прогнозована позиція цілі
+    SimStep simStep = {.pos = droneConfig.startPos,          // позиція дрона
+                       .direction = droneConfig.initialDir,  // напрямок (рад)
+                       .state = STOPPED,                     // стан автомата(0 - 4)
+                       .targetIdx = -1,                      // індекс поточної цілі
+                       .dropPoint = {0.f, 0.f},              // точка скиду (куди летить дрон)
+                       .aimPoint = {0.f, 0.f},               // куди впаде бомба (якщо скинути зараз)
+                       .predictedTarget = {0.f, 0.f},        // прогнозована позиція цілі
                        .speed = 0.f};
 
     float e{1e-5f};
     double h;
+    double t;
 
     try {
-        double t = calcDropTime(ammo, droneConfig.attackSpeed, droneConfig.altitude);
+        t = calcDropTime(ammo, droneConfig.attackSpeed, droneConfig.altitude);
         h = calcDropDistance(t, ammo, droneConfig.attackSpeed);
     }
     catch (const std::exception& ex) {
@@ -247,7 +286,7 @@ int main()
         int definedTargetIndex = -1;
         Coord definedTargetPos;
 
-        for (int targetIndex = 0; targetIndex < 1; targetIndex++) {
+        for (int targetIndex = 0; targetIndex < targetsCount; targetIndex++) {
             Coord currentTargetPos = interpolateTarget(targets[targetIndex], currentTime, droneConfig.arrayTimeStep);
 
             // define total time to reach target
@@ -287,8 +326,9 @@ int main()
                                                               droneConfig.attackSpeed,
                                                               acceleration,
                                                               droneConfig.accelerationPath,
-                                                              fullAccelerationTime) +
-                                                    timeToTurn;
+                                                              fullAccelerationTime);
+
+            totalTime += timeToTurn + t;
 
             if (totalTime < 0) {
                 continue;
@@ -367,7 +407,7 @@ int main()
                 }
                 else if (simStep.state == STOPPED || simStep.state == TURNING) {
                     if (!isReverseDirection) {
-                        simStep.direction = turnAngle > 0 ? simStep.direction + angleStep : simStep.direction - angleStep;
+                        simStep.turn(turnAngle > 0 ? angleStep : -angleStep);
                         simStep.state = TURNING;
                     }
                     else {
@@ -377,7 +417,10 @@ int main()
             }
             else {
                 // flying away
-                if (simStep.state == TURNING || simStep.state == STOPPED || simStep.state == ACCELERATING) {
+                if (simStep.state == DECELERATING) {
+                    doDeceleration(simStep, acceleration, droneConfig.simTimeStep);
+                }
+                else if (simStep.state == TURNING || simStep.state == STOPPED || simStep.state == ACCELERATING) {
                     simStep.state = ACCELERATING;
                     doAcceleration(simStep, acceleration, droneConfig.simTimeStep, droneConfig.attackSpeed);
                 }
@@ -415,10 +458,16 @@ int main()
         float D = simStep.pos.distance(interpolatedPos);
         simStep.dropPoint = simStep.pos.move(D - h, simStep.direction);
 
-        LOG("|step: " << step << "|st: " << simStep.state << "|sp: " << simStep.speed << "|x,y,d: " << simStep.pos.x << "," << simStep.pos.x
-                      << "," << simStep.direction << "|a: " << turnAngle);
-        LOG("|step: " << step << "|ix:iy " << interpolatedPos.x << interpolatedPos.y << "|px,py: " << simStep.predictedTarget.x << ","
-                      << simStep.predictedTarget.x << "|D: " << D);
+        float dPrev = 0.f;
+
+        if (step > 0) {
+            dPrev = out[step - 1].pos.distance(simStep.pos);
+        }
+
+        LOG("|step: " << step << "|st: " << simStep.state << "|speed: " << simStep.speed << "|x,y,dPrev, dir: " << simStep.pos.x << ","
+                      << simStep.pos.x << "," << dPrev << "," << simStep.direction << "|a: " << turnAngle);
+        LOG("|step: " << step << "|ix:iy " << interpolatedPos.x << "," << interpolatedPos.y << "|px,py: " << simStep.predictedTarget.x
+                      << "," << simStep.predictedTarget.x << "|D: " << D);
 
         if (simStep.speed >= droneConfig.attackSpeed) {
             simStep.aimPoint = simStep.pos.move(h, simStep.direction);
@@ -449,6 +498,7 @@ int main()
     outData["steps"] = json::array();
     for (int i = 0; i < step; i++) {
         json step;
+        step["step"] = i;
         step["position"] = {{"x", out[i].pos.x}, {"y", out[i].pos.y}};
         step["direction"] = out[i].direction;
         step["state"] = out[i].state;
@@ -458,7 +508,7 @@ int main()
         step["predictedTarget"] = {{"x", out[i].predictedTarget.x}, {"y", out[i].predictedTarget.y}};
         outData["steps"].push_back(step);
     }
-    std::ofstream simulationLile("homework_03/data/simulation.json");
+    std::ofstream simulationLile(configFolder + "simulation.json");
 
     if (!simulationLile.is_open()) {
         std::cerr << "Unable to open ammo file\n";
@@ -479,9 +529,10 @@ int main()
 
 Coord interpolateTarget(const Coord* target, float time, float arrayTimeStep)
 {
-    int _current = (int)floor(time / arrayTimeStep) % 60;
+    int index = (int)floor(time / arrayTimeStep);
+    int _current = index % 60;
     int _next = (_current + 1) % 60;
-    float frac = (time - _current * arrayTimeStep) / arrayTimeStep;
+    float frac = (time - index * arrayTimeStep) / arrayTimeStep;
     Coord current = target[_current];
     Coord next = target[_next];
 
@@ -581,7 +632,7 @@ inline void doMoving(SimStep& simStep, float time)
 
 inline void doTurning(SimStep& simStep, float turnAngle, float angleStep)
 {
-    simStep.direction = turnAngle > 0 ? simStep.direction + angleStep : simStep.direction - angleStep;
+    simStep.turn(turnAngle > 0 ? angleStep : -angleStep);
     simStep.state = std::fabs(turnAngle) >= angleStep ? TURNING : ACCELERATING;
 }
 
@@ -630,7 +681,7 @@ inline float calcReEntryTime(float speed,
 
     if (speed > 0) {
         timeToStop = speed / acceleration;
-        stopingPath = (speed * speed) / (2 * acceleration);
+        // stopingPath = (speed * speed) / (2 * acceleration);
     }
 
     float maneuverTime;
@@ -639,10 +690,10 @@ inline float calcReEntryTime(float speed,
         maneuverTime = fullAccelerationTime + fullAccelerationTime + (reEntryPath - 2 * accelerationPath) / attackSpeed;
     }
     else {
-        maneuverTime = std::sqrt(reEntryPath / acceleration);
+        maneuverTime = std::sqrt(reEntryPath / acceleration) + fullAccelerationTime;
     }
 
-    return timeToStop + reEntryTimeToTurn + maneuverTime + fullAccelerationTime;
+    return timeToStop + reEntryTimeToTurn + maneuverTime;
 }
 
 inline float calcEntryTime(int state,
@@ -665,6 +716,10 @@ inline float calcEntryTime(int state,
     }
 
     if (!isNeedTurnAngle) {
+        if (state == MOVING) {
+            timeToMove = distanceToDropPoint / attackSpeed;
+        }
+
         if (state == ACCELERATING || state == DECELERATING) {
             // calculate path to accelerate from current speed
             timeToAccelerate = (attackSpeed - speed) / acceleration;
