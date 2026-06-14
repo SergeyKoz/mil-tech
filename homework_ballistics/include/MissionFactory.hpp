@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 class ITargetsProvider;
 class IConfigLoader;
 class IBallisticsSolver;
@@ -17,8 +19,8 @@ enum class ExportType { JSON };
 
 class MissionFactory {
   public:
-    static ITargetsProvider* createTargetsProvider(ProviderType providerType);
-    static IBallisticsSolver* createBallisticsSolver(SolverType solverType);
-    static IConfigLoader* createConfigLoader(ConfigLoaderType configLoaderType, AmmoLoaderType ammoLoaderType);
-    static ISimulationExport* createSimulationExport(ExportType exportType);
+    static std::unique_ptr<ITargetsProvider> createTargetsProvider(ProviderType providerType);
+    static std::unique_ptr<IBallisticsSolver> createBallisticsSolver(SolverType solverType);
+    static std::unique_ptr<IConfigLoader> createConfigLoader(ConfigLoaderType configLoaderType, AmmoLoaderType ammoLoaderType);
+    static std::unique_ptr<ISimulationExport> createSimulationExport(ExportType exportType);
 };

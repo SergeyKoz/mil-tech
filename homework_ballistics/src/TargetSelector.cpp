@@ -1,4 +1,5 @@
 #include "TargetSelector.hpp"
+#include <cmath>
 #include "interfaces/ITargetsProvider.hpp"
 
 TargetSelector::TargetSelector(ITargetsProvider& targetProvider)
@@ -18,16 +19,18 @@ void TargetSelector::init(const DroneConfig& droneConfig)
     angleStep = droneConfig.angleStep();
 };
 
-auto TargetSelector::selectTarget(float currentTime, const SimStep& simulationStep, float dropDistance) -> SelectedTarget
+auto TargetSelector::selectTarget(float currentTime, const SimStep& simulationStep, DropParameters dropParameters) -> SelectedTarget
 {
     float minTotalTime = 0.F;
     int selectedTargetIndex = -1;
     Target* selectedTarget = nullptr;
+    Target* target = nullptr;
     Coord currentTargetPos{};
+    Coord selectedTargetPos{};
 
     for (int targetIndex = 0; targetIndex < targetProvider->getTargetsCount() - 1; targetIndex++) {
-        Target target = targetProvider->getTarget(targetIndex);
-        currentTargetPos = target.interpolate(currentTime, droneConfig->arrayTimeStep);
+        target = targetProvider->getTarget(targetIndex);
+        currentTargetPos = target->interpolate(currentTime, droneConfig->arrayTimeStep);
 
         // define total time to reach target
         // totalTime time to stop + time to turn + time to accelerate + time to move
@@ -45,7 +48,7 @@ auto TargetSelector::selectTarget(float currentTime, const SimStep& simulationSt
 
         // drop point calculation
         float distanceToTarget = currentTargetPos.distance(simulationStep.pos);
-        float distanceToDropPoint = distanceToTarget - dropDistance;
+        float distanceToDropPoint = distanceToTarget - dropParameters.distance;
 
         float reEntryPath = calcReEntryPath(distanceToDropPoint, isNeedTurnAngle, simulationStep.speed, acceleration, *droneConfig);
 
@@ -58,8 +61,9 @@ auto TargetSelector::selectTarget(float currentTime, const SimStep& simulationSt
                                 isNeedTurnAngle,
                                 acceleration,
                                 fullAccelerationTime,
-                                *droneConfig) +
-                      timeToTurn;
+                                *droneConfig);
+
+        totalTime += timeToTurn + dropParameters.time;
 
         if (totalTime < 0) {
             continue;
@@ -67,12 +71,13 @@ auto TargetSelector::selectTarget(float currentTime, const SimStep& simulationSt
 
         if (selectedTargetIndex == -1 || totalTime < minTotalTime) {
             minTotalTime = totalTime;
-            selectedTarget = &target;
+            selectedTarget = target;
             selectedTargetIndex = targetIndex;
+            selectedTargetPos = currentTargetPos;
         }
     }
 
-    return {.idx = selectedTargetIndex, .target = selectedTarget, .position = currentTargetPos, .timeToReachPosition = minTotalTime};
+    return {.idx = selectedTargetIndex, .target = selectedTarget, .position = selectedTargetPos, .timeToReachPosition = minTotalTime};
 };
 
 auto TargetSelector::calcReEntryPath(
@@ -163,10 +168,14 @@ auto TargetSelector::calcReEntryTime(float speed,
         timeToStop = speed / acceleration;
     }
 
-    float maneuverTime = fullAccelerationTime + fullAccelerationTime;
+    float maneuverTime = NAN;
 
     if (reEntryPath > 2 * droneConfig.accelerationPath) {
-        maneuverTime = maneuverTime + (reEntryPath - 2 * droneConfig.accelerationPath) / droneConfig.attackSpeed;
+        maneuverTime =
+            fullAccelerationTime + fullAccelerationTime + (reEntryPath - 2 * droneConfig.accelerationPath) / droneConfig.attackSpeed;
+    }
+    else {
+        maneuverTime = std::sqrt(reEntryPath / acceleration) + fullAccelerationTime;
     }
 
     return timeToStop + reEntryTimeToTurn + maneuverTime;

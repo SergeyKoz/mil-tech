@@ -4,6 +4,7 @@
 
 class AnalyticalSolver : public IBallisticsSolver {
   public:
+    auto init() -> void override;
     auto calcDropParameters(const AmmoParams& ammo, float v0, float z0) -> DropParameters override;
 
   private:

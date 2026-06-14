@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+constexpr float epsilon = 1e-5f;
+
 struct Coord {
     float x;
     float y;
@@ -23,6 +25,19 @@ struct Coord {
         result.y = y - other.y;
         return result;
     }
+
+    Coord operator*(float scalar) const { return {x * scalar, y * scalar}; }
+
+    Coord operator/(float scalar) const { return {x / scalar, y / scalar}; }
+
+    bool operator==(const Coord& other) const
+    {
+        const float epsilon = 1e-5f;
+
+        return std::abs(x - other.x) < epsilon && std::abs(y - other.y) < epsilon;
+    }
+
+    bool operator!=(const Coord& other) const { return !(*this == other); }
 
     Coord move(float distance, float direction) { return {x + distance * std::cos(direction), y + distance * std::sin(direction)}; }
 
@@ -76,9 +91,10 @@ struct Target {
     std::vector<Coord> positions;
     Coord interpolate(float time, float timeStep)
     {
-        int _current = (int)floor(time / timeStep) % 60;
+        int index = (int)floor(time / timeStep);
+        int _current = index % 60;
         int _next = (_current + 1) % 60;
-        float frac = (time - _current * timeStep) / timeStep;
+        float frac = (time - index * timeStep) / timeStep;
         Coord current = positions[_current];
         Coord next = positions[_next];
 
@@ -95,6 +111,17 @@ struct SimStep {
     Coord aimPoint;     // куди впаде бомба (якщо скинути зараз)
     Coord predictedTarget;
     float speed;
+
+    void turn(float angle)
+    {
+        direction += angle;
+
+        direction = std::fmod(direction, 2.0f * M_PI);
+
+        if (direction < 0.0f) {
+            direction += 2.0f * M_PI;
+        }
+    }
 };
 
 struct SelectedTarget {
@@ -102,4 +129,37 @@ struct SelectedTarget {
     Target* target;
     Coord position;
     float timeToReachPosition;
+};
+
+struct DroneContext {
+    float currentTime;
+    SimStep* simulationStep;
+    DroneConfig* droneConfig;
+    DropParameters* dropParams;
+    float turnAngle;
+    float acceleration;
+    float angleStep;
+    float distanceToDropPoint;
+
+    void calcTelemetry(SelectedTarget selectedTarget)
+    {
+        simulationStep->targetIdx = selectedTarget.idx;
+
+        Coord interpolatedPos = selectedTarget.target->interpolate(currentTime + droneConfig->simTimeStep, droneConfig->arrayTimeStep);
+        Coord delta = interpolatedPos - selectedTarget.position;
+
+        float vx = delta.x / droneConfig->simTimeStep;
+        float vy = delta.y / droneConfig->simTimeStep;
+
+        simulationStep->predictedTarget = {
+            selectedTarget.position.x + vx * selectedTarget.timeToReachPosition,
+            selectedTarget.position.y + vy * selectedTarget.timeToReachPosition,
+        };
+
+        float targetDistance = simulationStep->pos.distance(interpolatedPos);
+        simulationStep->dropPoint = simulationStep->pos.move(targetDistance - dropParams->distance, simulationStep->direction);
+        simulationStep->aimPoint = simulationStep->pos.move(dropParams->distance, simulationStep->direction);
+
+        distanceToDropPoint = simulationStep->pos.distance(simulationStep->predictedTarget);
+    }
 };

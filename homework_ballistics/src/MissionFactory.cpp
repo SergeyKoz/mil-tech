@@ -1,3 +1,4 @@
+#include <memory>
 #include <string>
 #include "MissionFactory.hpp"
 #include "providers/JsonTargetProvider.hpp"
@@ -7,30 +8,32 @@
 #include "export/JsonSimulationExport.hpp"
 #include "providers/JsonAmmoProvider.hpp"
 
-auto MissionFactory::createTargetsProvider(ProviderType providerType) -> ITargetsProvider *
+auto MissionFactory::createTargetsProvider(ProviderType providerType) -> std::unique_ptr<ITargetsProvider>
 {
     if (providerType == ProviderType::JSON) {
         const auto *targetsJsonPath = "homework_ballistics/data/targets.json";
 
-        return new JsonTargetProvider(targetsJsonPath);
+        return std::make_unique<JsonTargetProvider>(targetsJsonPath);
     }
 
     throw std::invalid_argument("Unsupported provider type");
 }
 
-auto MissionFactory::createBallisticsSolver(SolverType solverType) -> IBallisticsSolver *
+auto MissionFactory::createBallisticsSolver(SolverType solverType) -> std::unique_ptr<IBallisticsSolver>
 {
     switch (solverType) {
         case SolverType::ANALYTICAL:
-            return new AnalyticalSolver();
+            return std::make_unique<AnalyticalSolver>();
         case SolverType::TABLE:
-            return new TableSolver();
+            const auto *ballicticTableFile = "homework_ballistics/data/ballistic_table.txt";
+
+            return std::make_unique<TableSolver>(ballicticTableFile);
     };
 
     throw std::invalid_argument("Unsupported solver type");
 }
 
-auto MissionFactory::createConfigLoader(ConfigLoaderType configLoaderType, AmmoLoaderType ammoLoaderType) -> IConfigLoader *
+auto MissionFactory::createConfigLoader(ConfigLoaderType configLoaderType, AmmoLoaderType ammoLoaderType) -> std::unique_ptr<IConfigLoader>
 {
     std::map<std::string, AmmoParams> ammoList;
 
@@ -57,17 +60,18 @@ auto MissionFactory::createConfigLoader(ConfigLoaderType configLoaderType, AmmoL
     if (configLoaderType == ConfigLoaderType::JSON) {
         const auto *configPath = "homework_ballistics/data/config.json";
 
-        return new JsonConfigLoader(configPath, ammoList);
+        return std::make_unique<JsonConfigLoader>(configPath, ammoList);
     }
 
     throw std::invalid_argument("Unsupported loader type");
 }
 
-auto MissionFactory::createSimulationExport(ExportType exportType) -> ISimulationExport *
+auto MissionFactory::createSimulationExport(ExportType exportType) -> std::unique_ptr<ISimulationExport>
 {
     if (exportType == ExportType::JSON) {
         const auto *jsonFilePath = "homework_ballistics/data/simulation.json";
-        return new JsonSimulationExport(jsonFilePath);
+
+        return std::make_unique<JsonSimulationExport>(jsonFilePath);
     }
 
     throw std::invalid_argument("Unsupported export type");

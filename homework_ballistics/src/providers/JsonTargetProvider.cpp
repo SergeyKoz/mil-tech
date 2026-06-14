@@ -1,5 +1,6 @@
 #include "providers/JsonTargetProvider.hpp"
 #include "common.hpp"
+#include <memory>
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <vector>
@@ -10,7 +11,6 @@ JsonTargetProvider::JsonTargetProvider(std::string jsonFilePath)
     : jsonFilePath(std::move(jsonFilePath))
     , targetsCount(0)
     , timeSteps(0)
-    , targets({})
 {
 }
 
@@ -38,7 +38,7 @@ void JsonTargetProvider::load()
                 targetCoords[j].y = targetsJson["targets"][i]["positions"][j]["y"];
             }
 
-            targets[i] = {.positions = targetCoords};
+            targets[i] = std::make_unique<Target>(Target{.positions = targetCoords});
         }
     }
     catch (const std::exception& ex) {
@@ -48,13 +48,13 @@ void JsonTargetProvider::load()
     jsonFile.close();
 }
 
-auto JsonTargetProvider::getTarget(int index) -> Target
+auto JsonTargetProvider::getTarget(int index) -> Target*
 {
     if (index < 0 || index >= targetsCount) {
         throw std::out_of_range("Target index out of range");
     }
 
-    return targets.at(index);
+    return targets.at(index).get();
 }
 
 auto JsonTargetProvider::getTargetsCount() -> int

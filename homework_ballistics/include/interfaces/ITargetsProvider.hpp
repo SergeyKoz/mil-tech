@@ -4,9 +4,9 @@
 
 class ITargetsProvider {
   public:
-    virtual void load() = 0;
-    virtual int getTargetsCount() = 0;
-    virtual int getTimeSteps() = 0;
-    virtual Target getTarget(int index) = 0;
+    virtual auto load() -> void = 0;
+    virtual auto getTargetsCount() -> int = 0;
+    virtual auto getTimeSteps() -> int = 0;
+    virtual auto getTarget(int index) -> Target* = 0;
     virtual ~ITargetsProvider() = default;
 };

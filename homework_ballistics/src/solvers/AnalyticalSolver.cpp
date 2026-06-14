@@ -4,6 +4,8 @@
 
 const float GRAVITY = 9.81F;
 
+void AnalyticalSolver::init() {}
+
 auto AnalyticalSolver::calcDropParameters(const AmmoParams& ammo, float v0, float z0) -> DropParameters
 {
     if (v0 <= 0 || z0 <= 0) {
