@@ -20,7 +20,6 @@ Checks: >
   -modernize-avoid-c-arrays,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -bugprone-easily-swappable-parameters,
-  -cppcoreguidelines-owning-memory,
   misc-unused-using-decls,
 
 # Аналізувати лише код домашніх робіт і типові source/include директорії,
