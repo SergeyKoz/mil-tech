@@ -1,10 +1,28 @@
 #pragma once
 
+#define ENABLE_LOG 0
+#define ENABLE_DEBUG 1
+
+#if ENABLE_LOG
+#define LOG(msg) std::cout << "[LOG] " << msg << '\n'
+#else
+#define LOG(msg)
+#endif
+
+#if ENABLE_DEBUG
+#define DEBUG(msg) std::cout << "[DEBUG] " << msg << '\n'
+#else
+#define DEBUG(msg)
+#endif
+
+#include <iostream>
 #include <cmath>
 #include <string>
-#include <vector>
 
-constexpr float epsilon = 1e-5f;
+constexpr float epsilon = 1e-4f;
+
+class Target;
+class ThreadDronePhysics;
 
 struct Coord {
     float x;
@@ -55,6 +73,49 @@ struct Coord {
     }
 };
 
+struct Speed {
+    float x;
+    float y;
+
+    float toSpeed() const { return std::sqrt(x * x + y * y); }
+
+    Speed fromSpeed(float speed, float direction) const { return {.x = speed * std::cos(direction), .y = speed * std::sin(direction)}; }
+
+    Speed& operator+=(const Speed& other)
+    {
+        x += other.x;
+        y += other.y;
+
+        return *this;
+    }
+
+    Speed operator+(const Speed& other) const
+    {
+        Speed result;
+        result.x = x + other.x;
+        result.y = y + other.y;
+
+        return result;
+    }
+
+    Speed& operator-=(const Speed& other)
+    {
+        x -= other.x;
+        y -= other.y;
+
+        return *this;
+    }
+
+    Speed operator-(const Speed& other) const
+    {
+        Speed result;
+        result.x = x - other.x;
+        result.y = y - other.y;
+
+        return result;
+    }
+};
+
 struct AmmoParams {
     std::string name;
     float mass;  // маса (кг)
@@ -78,28 +139,15 @@ struct DroneConfig {
     AmmoParams ammo;         // обрані боєприпаси
     float arrayTimeStep;     // крок часу масиву цілей
     float simTimeStep;       // крок симуляції
-    float hitRadius;         // радіус влучення
-    float angularSpeed;      // кутова швидкість (рад/с)
-    float turnThreshold;     // поріг повороту (рад)
+    float targetTimeStep;
+    float physicsTimeStep;
+    float timeScale;
+    float hitRadius;      // радіус влучення
+    float angularSpeed;   // кутова швидкість (рад/с)
+    float turnThreshold;  // поріг повороту (рад)
 
     float acceleration() const { return attackSpeed * attackSpeed / (2 * accelerationPath); }
     float fullAccelerationTime() const { return attackSpeed / acceleration(); }
-    float angleStep() const { return angularSpeed * simTimeStep; }
-};
-
-struct Target {
-    std::vector<Coord> positions;
-    Coord interpolate(float time, float timeStep)
-    {
-        int index = (int)floor(time / timeStep);
-        int _current = index % 60;
-        int _next = (_current + 1) % 60;
-        float frac = (time - index * timeStep) / timeStep;
-        Coord current = positions[_current];
-        Coord next = positions[_next];
-
-        return {current.x + (next.x - current.x) * frac, current.y + (next.y - current.y) * frac};
-    };
 };
 
 struct SimStep {
@@ -111,17 +159,7 @@ struct SimStep {
     Coord aimPoint;     // куди впаде бомба (якщо скинути зараз)
     Coord predictedTarget;
     float speed;
-
-    void turn(float angle)
-    {
-        direction += angle;
-
-        direction = std::fmod(direction, 2.0f * M_PI);
-
-        if (direction < 0.0f) {
-            direction += 2.0f * M_PI;
-        }
-    }
+    float timeSecSinceStart;
 };
 
 struct SelectedTarget {
@@ -131,35 +169,30 @@ struct SelectedTarget {
     float timeToReachPosition;
 };
 
+struct DroneTelemetry {
+    DroneStatus state;
+    Coord position;
+    Speed speed;
+    float direction;
+    float timeSinceStart;
+};
+
 struct DroneContext {
     float currentTime;
     SimStep* simulationStep;
     DroneConfig* droneConfig;
+    ThreadDronePhysics* dronePhysics;
+    DroneTelemetry droneTelemetry;
     DropParameters* dropParams;
     float turnAngle;
     float acceleration;
     float angleStep;
     float distanceToDropPoint;
+};
 
-    void calcTelemetry(SelectedTarget selectedTarget)
-    {
-        simulationStep->targetIdx = selectedTarget.idx;
-
-        Coord interpolatedPos = selectedTarget.target->interpolate(currentTime + droneConfig->simTimeStep, droneConfig->arrayTimeStep);
-        Coord delta = interpolatedPos - selectedTarget.position;
-
-        float vx = delta.x / droneConfig->simTimeStep;
-        float vy = delta.y / droneConfig->simTimeStep;
-
-        simulationStep->predictedTarget = {
-            selectedTarget.position.x + vx * selectedTarget.timeToReachPosition,
-            selectedTarget.position.y + vy * selectedTarget.timeToReachPosition,
-        };
-
-        float targetDistance = simulationStep->pos.distance(interpolatedPos);
-        simulationStep->dropPoint = simulationStep->pos.move(targetDistance - dropParams->distance, simulationStep->direction);
-        simulationStep->aimPoint = simulationStep->pos.move(dropParams->distance, simulationStep->direction);
-
-        distanceToDropPoint = simulationStep->pos.distance(simulationStep->predictedTarget);
-    }
+struct DroneCommand {
+    DroneStatus state;
+    float angleSpeed;
+    float acceleration;
+    float maxSpeed;
 };

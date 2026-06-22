@@ -1,5 +1,8 @@
+
 #include "TargetSelector.hpp"
+#include "Target.hpp"
 #include <cmath>
+#include "common.hpp"
 #include "interfaces/ITargetsProvider.hpp"
 
 TargetSelector::TargetSelector(ITargetsProvider& targetProvider)
@@ -7,7 +10,6 @@ TargetSelector::TargetSelector(ITargetsProvider& targetProvider)
     , targetProvider(&targetProvider)
     , acceleration(0.F)
     , fullAccelerationTime(0.F)
-    , angleStep(0.F)
 {
 }
 
@@ -16,10 +18,9 @@ void TargetSelector::init(const DroneConfig& droneConfig)
     this->droneConfig = &droneConfig;
     acceleration = droneConfig.acceleration();
     fullAccelerationTime = droneConfig.fullAccelerationTime();
-    angleStep = droneConfig.angleStep();
 };
 
-auto TargetSelector::selectTarget(float currentTime, const SimStep& simulationStep, DropParameters dropParameters) -> SelectedTarget
+auto TargetSelector::selectTarget(const DroneTelemetry& droneTelemetry, DropParameters dropParameters) -> SelectedTarget
 {
     float minTotalTime = 0.F;
     int selectedTargetIndex = -1;
@@ -28,9 +29,11 @@ auto TargetSelector::selectTarget(float currentTime, const SimStep& simulationSt
     Coord currentTargetPos{};
     Coord selectedTargetPos{};
 
+    float droneSpeed = droneTelemetry.speed.toSpeed();
+
     for (int targetIndex = 0; targetIndex < targetProvider->getTargetsCount() - 1; targetIndex++) {
         target = targetProvider->getTarget(targetIndex);
-        currentTargetPos = target->interpolate(currentTime, droneConfig->arrayTimeStep);
+        currentTargetPos = target->position;
 
         // define total time to reach target
         // totalTime time to stop + time to turn + time to accelerate + time to move
@@ -38,8 +41,8 @@ auto TargetSelector::selectTarget(float currentTime, const SimStep& simulationSt
 
         // time to stop + time to turn + time to accelerate + time to move
         bool isNeedTurnAngle = false;
-        float targetDirection = simulationStep.pos.direction(currentTargetPos);
-        float turnAngle = targetDirection - simulationStep.direction;
+        float targetDirection = droneTelemetry.position.direction(currentTargetPos);
+        float turnAngle = targetDirection - droneTelemetry.direction;
 
         if (std::fabs(turnAngle) > droneConfig->turnThreshold) {
             timeToTurn = std::abs(turnAngle) / droneConfig->angularSpeed;
@@ -47,21 +50,20 @@ auto TargetSelector::selectTarget(float currentTime, const SimStep& simulationSt
         }
 
         // drop point calculation
-        float distanceToTarget = currentTargetPos.distance(simulationStep.pos);
+        float distanceToTarget = currentTargetPos.distance(droneTelemetry.position);
         float distanceToDropPoint = distanceToTarget - dropParameters.distance;
 
-        float reEntryPath = calcReEntryPath(distanceToDropPoint, isNeedTurnAngle, simulationStep.speed, acceleration, *droneConfig);
+        float reEntryPath = calcReEntryPath(distanceToDropPoint, isNeedTurnAngle, droneSpeed, acceleration, *droneConfig);
 
-        float totalTime =
-            reEntryPath > 0
-                ? calcReEntryTime(simulationStep.speed, reEntryPath, turnAngle, acceleration, fullAccelerationTime, *droneConfig)
-                : calcEntryTime(simulationStep.speed,
-                                simulationStep.state,
-                                distanceToDropPoint,
-                                isNeedTurnAngle,
-                                acceleration,
-                                fullAccelerationTime,
-                                *droneConfig);
+        float totalTime = reEntryPath > 0
+                              ? calcReEntryTime(droneSpeed, reEntryPath, turnAngle, acceleration, fullAccelerationTime, *droneConfig)
+                              : calcEntryTime(droneSpeed,
+                                              droneTelemetry.state,
+                                              distanceToDropPoint,
+                                              isNeedTurnAngle,
+                                              acceleration,
+                                              fullAccelerationTime,
+                                              *droneConfig);
 
         totalTime += timeToTurn + dropParameters.time;
 

@@ -1,5 +1,5 @@
 #include "export/JsonSimulationExport.hpp"
-#include "MissionProcessor.hpp"
+// #include "MissionProcessor.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
 
@@ -10,7 +10,7 @@ JsonSimulationExport::JsonSimulationExport(std::string jsonFilePath)
 {
 }
 
-void JsonSimulationExport::dumpResults(int steps, std::array<SimStep, MissionProcessor::MAX_STEPS>& results)
+void JsonSimulationExport::dumpResults(int steps, std::array<SimStep, ThreadMissionProcessor::MAX_STEPS>& results)
 {
     json outData;
     outData["totalSteps"] = steps - 1;
@@ -31,6 +31,7 @@ void JsonSimulationExport::dumpResults(int steps, std::array<SimStep, MissionPro
         step["dropPoint"] = {{"x", simStep.dropPoint.x}, {"y", simStep.dropPoint.y}};
         step["aimPoint"] = {{"x", simStep.aimPoint.x}, {"y", simStep.aimPoint.y}};
         step["predictedTarget"] = {{"x", simStep.predictedTarget.x}, {"y", simStep.predictedTarget.y}};
+        step["timeSecSinceStart"] = simStep.timeSecSinceStart;
         outData["steps"].push_back(step);
 
         i++;
