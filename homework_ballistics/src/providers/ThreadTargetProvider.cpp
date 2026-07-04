@@ -42,7 +42,7 @@ void ThreadTargetProvider::load()
                 targetCoords[j].y = targetsJson["targets"][i]["positions"][j]["y"];
             }
 
-            targets[i] = std::make_unique<Target>(targetCoords);
+            targets[i] = std::make_unique<Target>(targetCoords, timeSteps);
         }
     }
     catch (const std::exception& ex) {

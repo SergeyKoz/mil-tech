@@ -1,15 +1,16 @@
 #include "Target.hpp"
 
-Target::Target(std::vector<Coord> positions)
+Target::Target(std::vector<Coord> positions, int timeSteps)
     : position(positions.at(0))
     , velocity({0.F, 0.F})
-    , positions(positions){};
+    , positions(positions)
+    , timeSteps(timeSteps){};
 
 auto Target::update(float time, float timeStep, float simulationStep) -> void
 {
     int index = static_cast<int>(std::floor(time / timeStep));
-    int _current = index % 60;
-    int _next = (_current + 1) % 60;
+    int _current = index % timeSteps;
+    int _next = (_current + 1) % timeSteps;
     float frac = (time - static_cast<float>(index) * timeStep) / timeStep;
     Coord current = positions[_current];
     Coord next = positions[_next];

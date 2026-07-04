@@ -39,10 +39,7 @@ void JsonTargetProvider::load()
                 targetCoords[j].y = targetsJson["targets"][i]["positions"][j]["y"];
             }
 
-            // targets[i] = std::make_unique<Target>(
-            //     Target{.positions = targetCoords, .position = {.x = 0.F, .y = 0.F}, .velocity = {.x = 0.F, .y = 0.F}});
-
-            targets[i] = std::make_unique<Target>(targetCoords);
+            targets[i] = std::make_unique<Target>(targetCoords, timeSteps);
         }
     }
     catch (const std::exception& ex) {

@@ -6,7 +6,7 @@
 
 class Target {
   public:
-    Target(std::vector<Coord> positions);
+    Target(std::vector<Coord> positions, int timeSteps);
 
     auto update(float time, float timeStep, float simulationStep) -> void;
 
@@ -16,4 +16,5 @@ class Target {
   private:
     std::mutex dataMutex;
     std::vector<Coord> positions;
+    int timeSteps;
 };
