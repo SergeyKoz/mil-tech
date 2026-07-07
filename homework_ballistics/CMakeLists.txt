@@ -28,10 +28,12 @@ target_sources(
             src/providers/JsonTargetProvider.cpp
             src/providers/ThreadTargetProvider.cpp
             src/providers/JsonAmmoProvider.cpp
+            src/providers/CheckerTargetProvider.cpp
             src/solvers/AnalyticalSolver.cpp
             src/solvers/BallisticTable.cpp
             src/solvers/TableSolver.cpp
             src/config/JsonConfigLoader.cpp
+            src/config/CheckerConfigLoader.cpp
             src/export/JsonSimulationExport.cpp
             src/states/StoppedState.cpp
             src/states/MovingState.cpp

@@ -65,6 +65,6 @@ class DroneAutopilot : public IUartListener {
     std::map<DroneStatus, std::function<std::unique_ptr<IDroneState>(TargetSelector &)>> states;
 
     auto calculateSimulationStep() -> std::unique_ptr<SimStep>;
-    auto isDroneConfigReady(const DroneConfig &droneConfig) const -> bool;
-    auto isTargetHit(const DroneContext &droneContext) const -> bool;
+    static auto isDroneConfigReady(const DroneConfig &droneConfig) -> bool;
+    static auto isTargetHit(const DroneContext &droneContext) -> bool;
 };

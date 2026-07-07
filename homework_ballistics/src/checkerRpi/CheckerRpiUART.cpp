@@ -7,7 +7,8 @@
 #include <unistd.h>
 
 RpiCheckerUART::RpiCheckerUART(std::string uartPort)
-    : uartPort(uartPort)
+    : uart(0)
+    , uartPort(std::move(uartPort))
 {
 }
 
@@ -24,10 +25,10 @@ auto RpiCheckerUART::addListener(IUartListener &listener) -> void
 auto RpiCheckerUART::listenPackages() -> void
 {
     dlink::Parser parser;
-    uint8_t byte;
-    uint8_t type;
+    uint8_t byte = 0;
+    uint8_t type = 0;
     uint8_t payload[256];
-    uint8_t len;
+    uint8_t len = 0;
 
     while (true) {
         ssize_t n = read(uart, &byte, 1);
@@ -36,17 +37,17 @@ auto RpiCheckerUART::listenPackages() -> void
             continue;
         }
 
-        if (parser.feed(byte, type, payload, len)) {
-            processPacket(type, payload, len);
+        if (parser.feed(byte, type, &payload[0], len)) {
+            processPacket(type, &payload[0], len);
         }
     }
 }
 
-auto RpiCheckerUART::writeControl(const dlink::Control &control) -> void
+auto RpiCheckerUART::writeControl(const dlink::Control &control) const -> void
 {
     uint8_t out[64];
-    size_t m = dlink::encode(dlink::PKT_CONTROL, &control, sizeof control, out);
-    write(uart, out, m);
+    size_t m = dlink::encode(dlink::PKT_CONTROL, &control, sizeof control, &out[0]);
+    write(uart, &out, m);
 }
 
 RpiCheckerUART::~RpiCheckerUART()
@@ -58,7 +59,8 @@ RpiCheckerUART::~RpiCheckerUART()
 
 auto RpiCheckerUART::openUart(const char *dev) -> int
 {
-    int fd = open(dev, O_RDWR | O_NOCTTY | O_NONBLOCK);
+    int fd = open(dev, O_RDWR | O_NOCTTY | O_NONBLOCK);  // NOLINT(cppcoreguidelines-pro-type-vararg)
+
     if (fd < 0) {
         perror("open");
         return -1;
@@ -79,10 +81,11 @@ void RpiCheckerUART::processPacket(uint8_t type, const uint8_t *payload, uint8_t
 {
     switch (type) {
         case dlink::PKT_TELEMETRY: {
-            if (len != sizeof(dlink::Telemetry))
+            if (len != sizeof(dlink::Telemetry)) {
                 return;
+            }
 
-            dlink::Telemetry t;
+            dlink::Telemetry t{};
             std::memcpy(&t, payload, sizeof(t));
 
             for (IUartListener *listener : listeners) {
@@ -95,10 +98,11 @@ void RpiCheckerUART::processPacket(uint8_t type, const uint8_t *payload, uint8_t
         }
 
         case dlink::PKT_TARGET: {
-            if (len != sizeof(dlink::TargetPos))
+            if (len != sizeof(dlink::TargetPos)) {
                 return;
+            }
 
-            dlink::TargetPos target;
+            dlink::TargetPos target{};
             std::memcpy(&target, payload, sizeof(target));
 
             for (IUartListener *listener : listeners) {
@@ -111,10 +115,11 @@ void RpiCheckerUART::processPacket(uint8_t type, const uint8_t *payload, uint8_t
         }
 
         case dlink::PKT_AMMO: {
-            if (len != sizeof(dlink::AmmoCfg))
+            if (len != sizeof(dlink::AmmoCfg)) {
                 return;
+            }
 
-            dlink::AmmoCfg ammo;
+            dlink::AmmoCfg ammo{};
             std::memcpy(&ammo, payload, sizeof(ammo));
 
             for (IUartListener *listener : listeners) {
@@ -131,7 +136,7 @@ void RpiCheckerUART::processPacket(uint8_t type, const uint8_t *payload, uint8_t
                 return;
             }
 
-            dlink::DroneCfg cfg;
+            dlink::DroneCfg cfg{};
             std::memcpy(&cfg, payload, sizeof(cfg));
 
             for (IUartListener *listener : listeners) {
@@ -148,7 +153,7 @@ void RpiCheckerUART::processPacket(uint8_t type, const uint8_t *payload, uint8_t
                 return;
             }
 
-            dlink::Control control;
+            dlink::Control control{};
             std::memcpy(&control, payload, sizeof(control));
 
             for (IUartListener *listener : listeners) {
@@ -164,7 +169,7 @@ void RpiCheckerUART::processPacket(uint8_t type, const uint8_t *payload, uint8_t
                 return;
             }
 
-            dlink::Result result;
+            dlink::Result result{};
             std::memcpy(&result, payload, sizeof(result));
 
             for (IUartListener *listener : listeners) {

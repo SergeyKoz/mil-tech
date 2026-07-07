@@ -29,7 +29,8 @@ DroneAutopilot::DroneAutopilot(std::unique_ptr<IBallisticsSolver> solver,
     , targetSelector(std::make_unique<TargetSelector>(*this->targetProvider))
     , rpiCheckerGPIO(std::move(rpiCheckerGPIO))
     , rpiCheckerUART(std::move(rpiCheckerUART))
-    , currentTime(0.0F){};
+    , currentTime(0.0F)
+    , uart(0){};
 
 auto DroneAutopilot::updateTelemetry(const dlink::Telemetry &telemetry) -> void
 {
@@ -46,7 +47,7 @@ auto DroneAutopilot::updateTelemetry(const dlink::Telemetry &telemetry) -> void
         droneConfig.initialDir = telemetry.dir;
 
         dynamic_cast<CheckerConfigLoader *>(configLoader.get())->setConfig(droneConfig);
-        std::cout << "Drone is ready to start the mission!" << std::endl;
+        LOG("Drone is ready to start the mission!");
 
         isConfigured = isDroneConfigReady(droneConfig);
 
@@ -108,8 +109,11 @@ auto DroneAutopilot::updateTelemetry(const dlink::Telemetry &telemetry) -> void
         DEBUG("Command: " << command.state << " acc: " << command.acceleration << " ang: " << command.angleSpeed
                           << " max: " << command.maxSpeed);
 
-        float turnRate = std::abs(command.angleSpeed) < epsilon ? 0.0F : (command.angleSpeed > epsilon ? 1.0F : -1.0F);
-        float accel = command.state == ACCELERATING ? 1.0F : (command.state == DECELERATING ? -1.0F : 0.F);
+        float turnPosition = command.angleSpeed > epsilon ? 1.0F : -1.0F;
+        float turnRate = std::abs(command.angleSpeed) < epsilon ? 0.0F : turnPosition;
+
+        float accelPosition = command.state == ACCELERATING ? 1.0F : -1.0F;
+        float accel = command.state != ACCELERATING && command.state != DECELERATING ? 0.F : accelPosition;
 
         rpiCheckerUART->writeControl({.accel = accel, .turnRate = turnRate});
     }
@@ -117,7 +121,7 @@ auto DroneAutopilot::updateTelemetry(const dlink::Telemetry &telemetry) -> void
 
 auto DroneAutopilot::updateTargetPosition(const dlink::TargetPos &targetPosition) -> void
 {
-    auto targets = dynamic_cast<CheckerTargetProvider *>(targetProvider.get());
+    auto *targets = dynamic_cast<CheckerTargetProvider *>(targetProvider.get());
 
     targets->setTarget(targetPosition.id, {targetPosition.x, targetPosition.y}, currentTime);
 }
@@ -131,7 +135,7 @@ auto DroneAutopilot::updateAmmoConfig(const dlink::AmmoCfg &ammoConfig) -> void
     auto droneConfig = configLoader->getConfig();
 
     droneConfig.hitRadius = ammoConfig.hitRadius;
-    droneConfig.ammo = {.name = ammoConfig.name, .mass = ammoConfig.mass, .drag = ammoConfig.drag, .lift = ammoConfig.lift};
+    droneConfig.ammo = {.name = &ammoConfig.name[0], .mass = ammoConfig.mass, .drag = ammoConfig.drag, .lift = ammoConfig.lift};
 
     dynamic_cast<CheckerConfigLoader *>(configLoader.get())->setConfig(droneConfig);
     dynamic_cast<CheckerTargetProvider *>(targetProvider.get())->setTargetsCount(ammoConfig.nTargets);
@@ -197,7 +201,7 @@ auto DroneAutopilot::calculateSimulationStep() -> std::unique_ptr<SimStep>
                  .timeSecSinceStart = context->droneTelemetry.timeSinceStart}));
 }
 
-auto DroneAutopilot::isTargetHit(const DroneContext &droneContext) const -> bool
+auto DroneAutopilot::isTargetHit(const DroneContext &droneContext) -> bool
 {
     if (std::abs(droneContext.simulationStep->speed - droneContext.droneConfig->attackSpeed) > epsilon) {
         return false;
@@ -209,9 +213,9 @@ auto DroneAutopilot::isTargetHit(const DroneContext &droneContext) const -> bool
     return DF <= droneContext.droneConfig->hitRadius;
 }
 
-auto DroneAutopilot::isDroneConfigReady(const DroneConfig &droneConfig) const -> bool
+auto DroneAutopilot::isDroneConfigReady(const DroneConfig &droneConfig) -> bool
 {
-    return std::abs(droneConfig.altitude) > epsilon && droneConfig.ammo.name != "" && std::abs(droneConfig.attackSpeed) > epsilon;
+    return std::abs(droneConfig.altitude) > epsilon && !droneConfig.ammo.name.empty() && std::abs(droneConfig.attackSpeed) > epsilon;
 }
 
 auto DroneAutopilot::init() -> void

@@ -12,7 +12,7 @@ auto CheckerTargetProvider::isReady() -> bool
     return static_cast<int>(currentTargets.size()) == targetsCount && static_cast<int>(previousTargets.size()) == targetsCount;
 }
 
-auto CheckerTargetProvider::getTarget(int index) -> Target*
+auto CheckerTargetProvider::getTarget(int index) -> Target *
 {
     return currentTargets.at(index).get();
 }
@@ -41,13 +41,13 @@ auto CheckerTargetProvider::setTarget(int index, Coord pos, float time) -> void
     }
     else {
         auto currentTime = currentTargetsTimes.at(index);
-        auto currentTarget = currentTargets.at(index).get();
+        auto *currentTarget = currentTargets.at(index).get();
 
         if (std::abs(currentTime - time) > epsilon) {
             auto previousTtarget = !previousTargets.contains(index) ? std::make_unique<Target>(std::vector<Coord>{Coord{}}, 0)
                                                                     : std::move(previousTargets.at(index));
 
-            previousTtarget.get()->position = currentTarget->position;
+            previousTtarget->position = currentTarget->position;
             previousTargetsTimes.insert_or_assign(index, currentTime);
             previousTargets.insert_or_assign(index, std::move(previousTtarget));
         }

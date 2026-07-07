@@ -4,9 +4,11 @@
 #include <unistd.h>
 
 RpiCheckerGPIO::RpiCheckerGPIO(std::string chipName, uint startLine, uint dropLine)
-    : chipName(chipName)
+    : chipName(std::move(chipName))
     , startLine(startLine)
     , dropLine(dropLine)
+    , request{}
+    , chip{}
 {
 }
 
@@ -16,7 +18,7 @@ auto RpiCheckerGPIO::init() -> void
 
     chip = gpiod_chip_open(chipPath.c_str());
 
-    if (!chip) {
+    if (chip == nullptr) {
         throw std::invalid_argument("Can't open GPIO chip");
     }
 
@@ -47,7 +49,7 @@ auto RpiCheckerGPIO::init() -> void
     gpiod_line_config_free(line_cfg);
     gpiod_line_settings_free(settings);
 
-    if (!request) {
+    if (request == nullptr) {
         gpiod_chip_close(chip);
 
         throw std::invalid_argument("Can't reserve GPIO lines");

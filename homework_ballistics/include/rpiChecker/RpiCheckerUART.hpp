@@ -12,7 +12,7 @@ class RpiCheckerUART {
     auto init() -> void;
     auto addListener(IUartListener &listener) -> void;
     auto listenPackages() -> void;
-    auto writeControl(const dlink::Control &control) -> void;
+    auto writeControl(const dlink::Control &control) const -> void;
     ~RpiCheckerUART();
 
   private:
@@ -20,6 +20,6 @@ class RpiCheckerUART {
     std::string uartPort;
     std::vector<IUartListener *> listeners;
 
-    auto openUart(const char *dev) -> int;
+    static auto openUart(const char *dev) -> int;
     auto processPacket(uint8_t type, const uint8_t *payload, uint8_t len) -> void;
 };
