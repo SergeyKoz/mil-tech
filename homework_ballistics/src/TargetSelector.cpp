@@ -31,7 +31,7 @@ auto TargetSelector::selectTarget(const DroneTelemetry& droneTelemetry, DropPara
 
     float droneSpeed = droneTelemetry.speed.toSpeed();
 
-    for (int targetIndex = 0; targetIndex < targetProvider->getTargetsCount() - 1; targetIndex++) {
+    for (int targetIndex = 0; targetIndex < targetProvider->getTargetsCount(); targetIndex++) {
         target = targetProvider->getTarget(targetIndex);
         currentTargetPos = target->position;
 
