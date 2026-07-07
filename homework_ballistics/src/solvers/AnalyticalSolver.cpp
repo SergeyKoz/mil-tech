@@ -1,11 +1,10 @@
-#include "AnalyticalSolver.hpp"
+#include "solvers/AnalyticalSolver.hpp"
 #include <stdexcept>
 #include <cmath>
-#include "AmmoProvider.hpp"
 
 const float GRAVITY = 9.81F;
 
-DropParameters AnalyticalSolver::calcDropParameters(const AmmoParams& ammo, float v0, float z0)
+auto AnalyticalSolver::calcDropParameters(const AmmoParams& ammo, float v0, float z0) -> DropParameters
 {
     if (v0 <= 0 || z0 <= 0) {
         throw std::runtime_error("Initial velocity and initial height must be positive");
@@ -17,7 +16,7 @@ DropParameters AnalyticalSolver::calcDropParameters(const AmmoParams& ammo, floa
     return {.time = time, .distance = distance};
 };
 
-float AnalyticalSolver::CalcDropTime(const AmmoParams& ammo, float v0, float z0)
+auto AnalyticalSolver::CalcDropTime(const AmmoParams& ammo, float v0, float z0) -> float
 {
     float a = ammo.drag * GRAVITY * ammo.mass - 2.0F * ammo.drag * ammo.drag * ammo.lift * v0;
     float b = -(3.0F * GRAVITY * ammo.mass * ammo.mass) + 3.0F * (ammo.drag * ammo.lift * ammo.mass * v0);
@@ -44,7 +43,7 @@ float AnalyticalSolver::CalcDropTime(const AmmoParams& ammo, float v0, float z0)
     return t;
 }
 
-float AnalyticalSolver::calcDropDistance(float t, const AmmoParams& ammo, float v0)
+auto AnalyticalSolver::calcDropDistance(float t, const AmmoParams& ammo, float v0) -> float
 {
     float l = ammo.lift;
     float l2 = l * l;

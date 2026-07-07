@@ -1,11 +1,7 @@
 #pragma once
+#include "common.hpp"
 
 struct AmmoParams;
-
-struct DropParameters {
-    float time;      // час падіння
-    float distance;  // відстань, на яку відхилиться снаряд від вертикалі
-};
 
 class IBallisticsSolver {
   public:

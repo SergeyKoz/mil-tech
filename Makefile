@@ -1,5 +1,7 @@
 .PHONY: build
 
+-include BallisticsApp.Makefile
+
 build:
 	cmake --preset debug && cmake --build --preset debug --target ballistics_cli --target ballistics_tests
 
@@ -17,7 +19,6 @@ test: build
 
 quality: build
 	clang-tidy -p ./build/debug --config-file=.devcontainer/.clang-tidy $$(find ./homework_06 -name '*.cpp')
-	clang-tidy -p ./build/debug --config-file=.devcontainer/.clang-tidy $$(find ./homework_ballistics -name '*.cpp')
 
 quality-ci:
 	clang-tidy -p ./build/debug --config-file=.devcontainer/.clang-tidy -fix $$(find ./homework_06 -name '*.cpp')

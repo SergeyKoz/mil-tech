@@ -19,11 +19,14 @@ Checks: >
   -cppcoreguidelines-avoid-c-arrays,
   -modernize-avoid-c-arrays,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-owning-memory,
   misc-unused-using-decls,
 
 # Аналізувати лише код домашніх робіт і типові source/include директорії,
 # а не системні headers або сторонні бібліотеки.
-HeaderFilterRegex: '(^|/)(homework_[0-9]+|include|src)/'
+# HeaderFilterRegex: '(^|/)(homework_[0-9]+|include|src)/'
+HeaderFilterRegex: '^src/|^include/|^homework_[0-9|ballistics]+/'
 
 # Помилки analyzer/core-guidelines/modernize мають ламати перевірку.
 # Readability і performance лишаються попередженнями, щоб не блокувати

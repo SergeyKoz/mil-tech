@@ -1,5 +1,4 @@
-
-#include "FileConfigLoader.hpp"
+#include "config/JsonConfigLoader.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
 
@@ -19,13 +18,13 @@ void from_json(const json& j, DroneConfig& droneConfig)
     droneConfig.angularSpeed = j["drone"]["angularSpeed"];
 }
 
-FileConfigLoader::FileConfigLoader(const char* filePath, AmmoList ammoList)
-    : configFilePath(filePath)
-    , ammoList(ammoList)
+JsonConfigLoader::JsonConfigLoader(std::string filePath, std::map<std::string, AmmoParams> ammoList)
+    : configFilePath(std::move(filePath))
+    , ammoList(std::move(ammoList))
 {
 }
 
-void FileConfigLoader::load()
+void JsonConfigLoader::load()
 {
     std::ifstream configFile{configFilePath};
 
@@ -41,32 +40,27 @@ void FileConfigLoader::load()
         resolveAmmo(jsonConfig, droneConfig, ammoList);
     }
     catch (const std::exception& ex) {
+        throw std::runtime_error(std::string("Error parsing config file: ") + ex.what());
     }
 
     configFile.close();
 }
 
-void FileConfigLoader::resolveAmmo(const json& jsonConfig, DroneConfig& droneConfig, const AmmoList& ammoList)
+void JsonConfigLoader::resolveAmmo(const json& jsonConfig, DroneConfig& droneConfig, const std::map<std::string, AmmoParams>& ammoList)
 {
-    const char* ammoName = jsonConfig["ammo"].get_ref<const std::string&>().c_str();
+    const auto ammoName = jsonConfig["ammo"].get<const std::string>();
+    auto ammoIt = ammoList.find(ammoName);
 
-    for (int i = 0; i < ammoList.count; i++) {
-        if (strcmp(ammoList.ammo[i].name, ammoName) == 0) {
-            droneConfig.ammo = ammoList.ammo[i];
+    if (ammoIt != ammoList.end()) {
+        droneConfig.ammo = ammoIt->second;
 
-            return;
-        }
+        return;
     }
 
     throw std::runtime_error("Unable to define ammo");
 }
 
-DroneConfig FileConfigLoader::getConfig()
+auto JsonConfigLoader::getConfig() -> DroneConfig
 {
     return droneConfig;
-}
-
-FileConfigLoader::~FileConfigLoader()
-{
-    delete[] ammoList.ammo;
 }

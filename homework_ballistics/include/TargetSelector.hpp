@@ -7,13 +7,6 @@ struct Target;
 struct DroneConfig;
 class ITargetsProvider;
 
-struct SelectedTarget {
-    int idx;
-    Target* target;
-    Coord position;
-    float timeToReachPosition;
-};
-
 class TargetSelector {
   public:
     TargetSelector(ITargetsProvider& targetProvider);
@@ -26,14 +19,15 @@ class TargetSelector {
     float acceleration;
     float fullAccelerationTime;
     float angleStep;
-    float calcReEntryPath(float distanceToDropPoint, bool isNeedTurnAngle, float speed, float acceleration, const DroneConfig& droneConfig);
-    float calcEntryTime(float speed,
-                        DroneStatus state,
-                        float distanceToDropPoint,
-                        bool isNeedTurnAngle,
-                        float acceleration,
-                        float fullAccelerationTime,
-                        const DroneConfig& droneConfig);
-    float calcReEntryTime(
-      float speed, float reEntryPath, float turnAngle, float acceleration, float fullAccelerationTime, const DroneConfig& droneConfig);
+    static float calcReEntryPath(
+        float distanceToDropPoint, bool isNeedTurnAngle, float speed, float acceleration, const DroneConfig& droneConfig);
+    static float calcEntryTime(float speed,
+                               DroneStatus state,
+                               float distanceToDropPoint,
+                               bool isNeedTurnAngle,
+                               float acceleration,
+                               float fullAccelerationTime,
+                               const DroneConfig& droneConfig);
+    static float calcReEntryTime(
+        float speed, float reEntryPath, float turnAngle, float acceleration, float fullAccelerationTime, const DroneConfig& droneConfig);
 };

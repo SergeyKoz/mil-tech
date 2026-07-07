@@ -15,8 +15,8 @@ enum class ExportType { JSON };
 
 class MissionFactory {
   public:
-    ITargetsProvider* createTargetsProvider(ProviderType providerType);
-    IBallisticsSolver* createBallisticsSolver(SolverType solverType);
-    IConfigLoader* createConfigLoader(LoaderType loaderType);
-    ISimulationExport* createSimulationExport(ExportType exportType);
+    static ITargetsProvider* createTargetsProvider(ProviderType providerType);
+    static IBallisticsSolver* createBallisticsSolver(SolverType solverType);
+    static IConfigLoader* createConfigLoader(LoaderType loaderType);
+    static ISimulationExport* createSimulationExport(ExportType exportType);
 };

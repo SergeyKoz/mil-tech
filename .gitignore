@@ -31,3 +31,5 @@ core.*
 .DS_Store
 Thumbs.db
 .idea
+
+homework_ballistics/data/simulation.json
