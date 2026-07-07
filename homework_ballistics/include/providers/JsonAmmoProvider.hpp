@@ -4,9 +4,9 @@
 #include <map>
 #include "common.hpp"
 
-class AmmoProvider {
+class JsonAmmoProvider {
   public:
-    AmmoProvider(std::string filePath);
+    JsonAmmoProvider(std::string filePath);
     auto getAmmoList() -> std::map<std::string, AmmoParams>;
 
   private:

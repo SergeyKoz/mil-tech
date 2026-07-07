@@ -11,7 +11,7 @@ class TargetSelector {
   public:
     TargetSelector(ITargetsProvider& targetProvider);
     void init(const DroneConfig& droneConfig);
-    SelectedTarget selectTarget(float currentTime, const SimStep& simulationStep, float dropDistance);
+    SelectedTarget selectTarget(float currentTime, const SimStep& simulationStep, DropParameters dropParameters);
 
   private:
     const DroneConfig* droneConfig;

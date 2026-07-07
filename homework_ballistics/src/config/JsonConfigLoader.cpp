@@ -18,6 +18,20 @@ void from_json(const json& j, DroneConfig& droneConfig)
     droneConfig.angularSpeed = j["drone"]["angularSpeed"];
 }
 
+void resolveAmmo(const json& jsonConfig, DroneConfig& droneConfig, const std::map<std::string, AmmoParams>& ammoList)
+{
+    const auto ammoName = jsonConfig["ammo"].get<const std::string>();
+    auto ammoIt = ammoList.find(ammoName);
+
+    if (ammoIt != ammoList.end()) {
+        droneConfig.ammo = ammoIt->second;
+
+        return;
+    }
+
+    throw std::runtime_error("Unable to define ammo");
+}
+
 JsonConfigLoader::JsonConfigLoader(std::string filePath, std::map<std::string, AmmoParams> ammoList)
     : configFilePath(std::move(filePath))
     , ammoList(std::move(ammoList))
@@ -44,20 +58,6 @@ void JsonConfigLoader::load()
     }
 
     configFile.close();
-}
-
-void JsonConfigLoader::resolveAmmo(const json& jsonConfig, DroneConfig& droneConfig, const std::map<std::string, AmmoParams>& ammoList)
-{
-    const auto ammoName = jsonConfig["ammo"].get<const std::string>();
-    auto ammoIt = ammoList.find(ammoName);
-
-    if (ammoIt != ammoList.end()) {
-        droneConfig.ammo = ammoIt->second;
-
-        return;
-    }
-
-    throw std::runtime_error("Unable to define ammo");
 }
 
 auto JsonConfigLoader::getConfig() -> DroneConfig
