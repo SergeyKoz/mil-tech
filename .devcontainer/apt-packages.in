@@ -35,5 +35,14 @@ ninja-build
 
 mc
 
-libgpiod-dev
-gpiod
+# libgpiod-dev
+# gpiod
+
+# ROS 2 інструменти для демо блоку 5: colcon workspace, ament_auto і graph GUI.
+python3-colcon-common-extensions
+ros-jazzy-ament-cmake-auto
+ros-jazzy-rqt-graph
+
+# CycloneDDS використовується як default RMW для стабільнішого discovery
+# у devcontainer.
+ros-jazzy-rmw-cyclonedds-cpp
