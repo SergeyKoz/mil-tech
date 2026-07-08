@@ -1,5 +1,60 @@
 # Changelog
 
+## 2026-07-08
+
+### Added
+
+- [Home work 11] Drone control by UART and automatic release
+
+## 2026-07-01
+
+### Added
+
+- [Home work 10] Drone simulation. Multithreading.
+
+## 2026-06-24
+
+### Added
+
+- [Home work 09] Drone simulation. Smart pointers. Table solver. State pattern.
+
+## 2026-06-12
+
+### Added
+
+- [Home work 03] Transfered to the repo.
+
+### Fixed
+
+- [Home work 06] Notices fixes. Tests.
+
+## 2026-06-03
+
+### Added
+
+- [Home work 08] Drone simulation. Add STL containers. Refactor class structure. 
+
+## 2026-05-27
+
+### Added
+
+- [Home work 07] Drone simulation. Refactoring (Interfaces. Classes). Design patterns.
+
+## 2026-05-20
+
+### Added
+
+- [Home work 06] Refactor homework 1. Quality check.
+
+## 2026-05-10
+
+### Added
+
+- [Home work 05] Telemetry parser debug.
+
+Усі помітні зміни в цьому репо фіксуються тут.
+Формат - [Keep a Changelog](https://keepachangelog.com/uk/1.1.0/), дати в ISO 8601.
+
 ## 2026-05-08
 
 ### Added
