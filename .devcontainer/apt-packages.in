@@ -35,8 +35,8 @@ ninja-build
 
 mc
 
-# libgpiod-dev
-# gpiod
+libgpiod-dev
+gpiod
 
 # ROS 2 інструменти для демо блоку 5: colcon workspace, ament_auto і graph GUI.
 python3-colcon-common-extensions
