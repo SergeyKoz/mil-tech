@@ -10,12 +10,15 @@ enum class C2State {
     ARMED_MANUAL,
 };
 
+class AutoStub;
+class Log;
+
 // C2-сервiс для арбiтражу команд.
 // Читає MAVLink-телеметрiю з fc_sim через MAVSDK та точки маршруту
 // вiд auto_stub у JSON через UDP. Вирiшує, хто може командувати FC.
 class C2Controller {
 public:
-    explicit C2Controller(uint16_t fc_port);
+    explicit C2Controller(uint16_t fc_port, uint16_t as_port, std::shared_ptr<Log> log);
     ~C2Controller();
 
     // Обробити одну iтерацiю: передати або блокувати команди
@@ -24,9 +27,14 @@ public:
 
     // Read-only доступ до поточного стану C2.
     // Корисно для перевiрок, тестiв або майбутньої дiагностики.
-    C2State current_state() const;
+    C2State currentState() const;
 
 private:
-    struct Impl;
+    struct Impl;    
     std::unique_ptr<Impl> impl_;
+    std::unique_ptr<AutoStub> autoStub;
+    std::shared_ptr<Log> log;
+    void handle(C2State state) const;
+    C2State readFcState() const;
+    bool healthcheck() const;
 };

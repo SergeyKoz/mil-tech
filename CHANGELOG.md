@@ -7,6 +7,12 @@
 
 ### Added
 
+- [Home work 12] Docker Compose as "system bring-up"
+
+## 2026-07-08
+
+### Added
+
 - [Home work 11] Drone control by UART and automatic release
 
 ## 2026-07-03

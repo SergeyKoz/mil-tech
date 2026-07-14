@@ -18,6 +18,7 @@ FetchContent_MakeAvailable(nlohmann_json)
 
 add_executable(c2_service
     src/main.cpp
+    src/auto_stub.cpp
     src/fc_link.cpp
     src/c2_controller.cpp
 )
