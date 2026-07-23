@@ -56,3 +56,5 @@ jobs:
             # make AntiDroneTurretApp/format-ci
             make AntiDroneTurretApp/build-ci
             make AntiDroneTurretApp/tests-ci
+            make UndergroundWorldApp/build-ci
+            make UndergroundWorldApp/tests-ci

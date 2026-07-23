@@ -1,3 +1,4 @@
+.cache/
 robot_ws/build/
 robot_ws/install/
 robot_ws/log/

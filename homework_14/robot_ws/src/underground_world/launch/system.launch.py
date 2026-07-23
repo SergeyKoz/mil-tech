@@ -44,5 +44,23 @@ def generate_launch_description():
                 description="Delay before applying queued move commands",
             ),
             world_node,
+            Node(
+                package="underground_world",
+                executable="world_explorer_node",
+                parameters=[
+                    {
+                        "scenario_path": scenario_path,
+                    }
+                ],
+                # parameters=[config],
+                # arguments=["--ros-args", "--log-level", log_level],
+            ),
+            Node(
+                package="underground_world",
+                executable="trigger_service_node",
+                parameters=[],
+                # parameters=[config],
+                # arguments=["--ros-args", "--log-level", log_level],
+            ),
         ]
     )

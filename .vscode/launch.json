@@ -206,5 +206,36 @@
         }
       ]
     },
+    {
+      "name": "Debug Underground World GTest",
+      "type": "cppdbg",
+      "request": "launch",
+      // Points directly to where colcon builds your test executable
+      "program": "${workspaceFolder}/homework_14/robot_ws/build/underground_world/world_explorer_test",
+      "args": [
+        "--verbose"
+      ],
+      "cwd": "${workspaceFolder}/homework_14/robot_ws",
+      "MIMode": "gdb",
+      // "stopAtEntry": true,
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "CMake: configure and build underground_world",
+      "environment": [
+        {
+          "name": "LD_LIBRARY_PATH",
+          "value": "${workspaceFolder}/homework_14/robot_ws/install/underground_world/lib:/opt/ros/${env:ROS_DISTRO}/lib"
+        },
+        {
+          "name": "AMENT_PREFIX_PATH",
+          "value": "${workspaceFolder}/homework_14/robot_ws/install/underground_world:/opt/ros/${env:ROS_DISTRO}"
+        }
+      ]
+    }
   ]
 }
