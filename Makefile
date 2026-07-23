@@ -1,6 +1,7 @@
 .PHONY: build
 
 -include BallisticsApp.Makefile
+-include ./homework_12/C2App.Makefile
 
 build:
 	cmake --preset debug && cmake --build --preset debug --target ballistics_cli --target ballistics_tests
