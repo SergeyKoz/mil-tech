@@ -21,8 +21,12 @@ add_executable(ballistics_app src/main.cpp)
 target_sources(
     ballistics_app
     PRIVATE src/MissionFactory.cpp
-            src/MissionProcessor.cpp
+            src/IntervalWorker.cpp
+            src/ThreadDronePhysics.cpp
+            src/ThreadMissionProcessor.cpp
+            src/Target.cpp
             src/providers/JsonTargetProvider.cpp
+            src/providers/ThreadTargetProvider.cpp
             src/providers/JsonAmmoProvider.cpp
             src/solvers/AnalyticalSolver.cpp
             src/solvers/BallisticTable.cpp

@@ -1,28 +1,41 @@
 #include <iostream>
-#include <memory>
-#include "MissionProcessor.hpp"
 #include "MissionFactory.hpp"
-#include "interfaces/ITargetsProvider.hpp"
-#include "interfaces/ISimulationExport.hpp"
+#include "ThreadDronePhysics.hpp"
+#include "ThreadMissionProcessor.hpp"
 
 auto main() -> int
 {
     try {
         auto ballisticsSolver = MissionFactory::createBallisticsSolver(SolverType::TABLE);
         auto configLoader = MissionFactory::createConfigLoader(ConfigLoaderType::JSON, AmmoLoaderType::STATIC);
-        auto targetProvider = MissionFactory::createTargetsProvider(ProviderType::JSON);
         auto simulationExport = MissionFactory::createSimulationExport(ExportType::JSON);
 
-        auto mission = std::make_unique<MissionProcessor>(
-            std::move(ballisticsSolver), std::move(configLoader), std::move(targetProvider), std::move(simulationExport));
+        configLoader->load();
+        auto droneConfig = configLoader->getConfig();
 
-        mission->init();
+        auto targetProvider = MissionFactory::createThreadTargetsProvider(droneConfig);
+        targetProvider->load();
 
-        while (mission->hasNext()) {
-            mission->step();
+        auto dronePhysics = std::make_unique<ThreadDronePhysics>(droneConfig);
+
+        auto missionProcessor = std::make_unique<ThreadMissionProcessor>(
+            std::move(ballisticsSolver), droneConfig, *dronePhysics.get(), *targetProvider, std::move(simulationExport));
+
+        missionProcessor->init();
+
+        missionProcessor->start();
+        dronePhysics->start();
+        targetProvider->start();
+
+        while (!missionProcessor->isThreadReady() || !dronePhysics->isThreadReady() || !targetProvider->isThreadReady()) {
+            std::this_thread::yield();
         }
 
-        mission->dumpResults();
+        missionProcessor->wait();
+        dronePhysics->stop();
+        targetProvider->stop();
+
+        missionProcessor->dumpResults();
     }
     catch (const std::runtime_error& ex) {
         std::cerr << ex.what() << '\n';

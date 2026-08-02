@@ -2,8 +2,8 @@
 
 #include <array>
 #include <memory>
+#include "ThreadDronePhysics.hpp"
 #include "interfaces/IBallisticsSolver.hpp"
-#include "interfaces/IConfigLoader.hpp"
 #include "interfaces/IDroneState.hpp"
 #include "common.hpp"
 
@@ -14,11 +14,11 @@ class ISimulationExport;
 class TargetSelector;
 struct SelectedTarget;
 
-class MissionProcessor {
+class [[deprecated]] MissionProcessor {
   public:
     static constexpr int MAX_STEPS = 10000;
     MissionProcessor(std::unique_ptr<IBallisticsSolver> solver,
-                     std::unique_ptr<IConfigLoader> configLoader,
+                     const DroneConfig& droneConfig,
                      std::unique_ptr<ITargetsProvider> targetProvider,
                      std::unique_ptr<ISimulationExport> simulationExport);
     void init();
@@ -31,11 +31,12 @@ class MissionProcessor {
 
   private:
     std::array<SimStep, MAX_STEPS> out;
+
     DroneConfig droneConfig;
+    std::unique_ptr<ThreadDronePhysics> dronePhysics;
     SimStep simulationStep;
     std::unique_ptr<IBallisticsSolver> solver;
     std::unique_ptr<ITargetsProvider> targetProvider;
-    std::unique_ptr<IConfigLoader> configLoader;
     std::unique_ptr<ISimulationExport> simulationExport;
 
     std::unique_ptr<IDroneState> state;
@@ -46,5 +47,5 @@ class MissionProcessor {
     DropParameters dropParams;
     std::unique_ptr<TargetSelector> targetSelector;
     void calcSimulationStep(const SelectedTarget& selectedTarget);
-    bool isTargetHit(SimStep& simStep);
+    bool isTargetHit(SimStep& simStep) const;
 };

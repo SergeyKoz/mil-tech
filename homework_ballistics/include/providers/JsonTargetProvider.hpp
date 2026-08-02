@@ -1,6 +1,7 @@
 #pragma once
 
 #include "interfaces/ITargetsProvider.hpp"
+#include "Target.hpp"
 #include <memory>
 #include <string>
 #include <vector>

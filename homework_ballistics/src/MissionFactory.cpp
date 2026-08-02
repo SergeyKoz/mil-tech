@@ -2,11 +2,15 @@
 #include <string>
 #include "MissionFactory.hpp"
 #include "providers/JsonTargetProvider.hpp"
+#include "providers/ThreadTargetProvider.hpp"
 #include "solvers/AnalyticalSolver.hpp"
 #include "solvers/TableSolver.hpp"
 #include "config/JsonConfigLoader.hpp"
 #include "export/JsonSimulationExport.hpp"
 #include "providers/JsonAmmoProvider.hpp"
+#include "interfaces/IConfigLoader.hpp"
+#include "interfaces/ITargetsProvider.hpp"
+#include "interfaces/IBallisticsSolver.hpp"
 
 auto MissionFactory::createTargetsProvider(ProviderType providerType) -> std::unique_ptr<ITargetsProvider>
 {
@@ -17,6 +21,13 @@ auto MissionFactory::createTargetsProvider(ProviderType providerType) -> std::un
     }
 
     throw std::invalid_argument("Unsupported provider type");
+}
+
+auto MissionFactory::createThreadTargetsProvider(const DroneConfig &droneConfig) -> std::unique_ptr<ThreadTargetProvider>
+{
+    const auto *targetsJsonPath = "homework_ballistics/data/targets.json";
+
+    return std::make_unique<ThreadTargetProvider>(targetsJsonPath, droneConfig);
 }
 
 auto MissionFactory::createBallisticsSolver(SolverType solverType) -> std::unique_ptr<IBallisticsSolver>

@@ -1,4 +1,4 @@
-#include "providers/JsonTargetProvider.hpp"
+#include "providers/ThreadTargetProvider.hpp"
 #include "common.hpp"
 #include <memory>
 #include <nlohmann/json.hpp>
@@ -8,14 +8,17 @@
 
 using json = nlohmann::json;
 
-JsonTargetProvider::JsonTargetProvider(std::string jsonFilePath)
-    : jsonFilePath(std::move(jsonFilePath))
+ThreadTargetProvider::ThreadTargetProvider(std::string jsonFilePath, const DroneConfig& droneConfig)
+    : IntervalWorker(std::chrono::milliseconds(static_cast<int>(std::round(droneConfig.simTimeStep * 1000))),
+                     static_cast<int>(droneConfig.timeScale))
+    , jsonFilePath(std::move(jsonFilePath))
     , targetsCount(0)
     , timeSteps(0)
+    , arrayTimeStep(static_cast<int>(droneConfig.arrayTimeStep))
 {
 }
 
-void JsonTargetProvider::load()
+void ThreadTargetProvider::load()
 {
     std::ifstream jsonFile{jsonFilePath};
 
@@ -49,7 +52,7 @@ void JsonTargetProvider::load()
     jsonFile.close();
 }
 
-auto JsonTargetProvider::getTarget(int index) -> Target*
+auto ThreadTargetProvider::getTarget(int index) -> Target*
 {
     if (index < 0 || index >= targetsCount) {
         throw std::out_of_range("Target index out of range");
@@ -58,12 +61,28 @@ auto JsonTargetProvider::getTarget(int index) -> Target*
     return targets.at(index).get();
 }
 
-auto JsonTargetProvider::getTargetsCount() -> int
+auto ThreadTargetProvider::getTargetsCount() -> int
 {
     return targetsCount;
 }
 
-auto JsonTargetProvider::getTimeSteps() -> int
+auto ThreadTargetProvider::getTimeSteps() -> int
 {
     return timeSteps;
 }
+
+auto ThreadTargetProvider::intervalTask() -> void
+{
+    auto timeStep = static_cast<float>(interval.count()) / 1000.0F;
+    msSinceStart += static_cast<int>(interval.count());
+
+    float timeSinceStart = static_cast<float>(msSinceStart) / 1000.0F;
+
+    for (int i = 0; i < targetsCount - 1; i++) {
+        auto* target = getTarget(i);
+
+        target->update(timeSinceStart, static_cast<float>(arrayTimeStep), timeStep);
+    }
+}
+
+ThreadTargetProvider::~ThreadTargetProvider() = default;

@@ -16,6 +16,9 @@ void from_json(const json& j, DroneConfig& droneConfig)
     droneConfig.hitRadius = j["simulation"]["hitRadius"];
     droneConfig.turnThreshold = j["drone"]["turnThreshold"];
     droneConfig.angularSpeed = j["drone"]["angularSpeed"];
+    droneConfig.targetTimeStep = j["simulation"]["targetTimeStep"];
+    droneConfig.physicsTimeStep = j["simulation"]["physicsTimeStep"];
+    droneConfig.timeScale = j["simulation"]["timeScale"];
 }
 
 void resolveAmmo(const json& jsonConfig, DroneConfig& droneConfig, const std::map<std::string, AmmoParams>& ammoList)

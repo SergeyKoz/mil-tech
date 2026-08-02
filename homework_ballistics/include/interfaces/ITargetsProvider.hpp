@@ -2,6 +2,8 @@
 
 #include "common.hpp"
 
+class Target;
+
 class ITargetsProvider {
   public:
     virtual auto load() -> void = 0;

@@ -1,21 +1,21 @@
 #include "MissionProcessor.hpp"
 #include <utility>
 #include "TargetSelector.hpp"
-#include "interfaces/IConfigLoader.hpp"
 #include "interfaces/ITargetsProvider.hpp"
 #include "interfaces/ISimulationExport.hpp"
 #include "interfaces/IBallisticsSolver.hpp"
 #include "states/StoppedState.hpp"
 
 MissionProcessor::MissionProcessor(std::unique_ptr<IBallisticsSolver> solver,
-                                   std::unique_ptr<IConfigLoader> configLoader,
+                                   const DroneConfig& droneConfig,
                                    std::unique_ptr<ITargetsProvider> targetProvider,
                                    std::unique_ptr<ISimulationExport> simulationExport)
     : out({})
+    , droneConfig(droneConfig)
+    , dronePhysics(std::make_unique<ThreadDronePhysics>(droneConfig))
     , simulationStep{}
     , solver(std::move(solver))
     , targetProvider(std::move(targetProvider))
-    , configLoader(std::move(configLoader))
     , simulationExport(std::move(simulationExport))
     , currentStep(0)
     , currentTime(0.F)
@@ -24,8 +24,6 @@ MissionProcessor::MissionProcessor(std::unique_ptr<IBallisticsSolver> solver,
 
 auto MissionProcessor::init() -> void
 {
-    configLoader->load();
-    droneConfig = configLoader->getConfig();
     targetProvider->load();
     targetSelector->init(droneConfig);
     solver->init();
@@ -42,15 +40,18 @@ auto MissionProcessor::init() -> void
                       .dropPoint = {0.F, 0.F},              // точка скиду (куди летить дрон)
                       .aimPoint = {0.F, 0.F},               // куди впаде бомба (якщо скинути зараз)
                       .predictedTarget = {0.F, 0.F},        // прогнозована позиція цілі
-                      .speed = 0.F};
+                      .speed = 0.F,
+                      .timeSecSinceStart = 0.F};
 
     context = std::make_unique<DroneContext>(DroneContext{.currentTime = currentTime,
                                                           .simulationStep = &simulationStep,
                                                           .droneConfig = &droneConfig,
+                                                          .dronePhysics = dronePhysics.get(),
+                                                          .droneTelemetry = {},
                                                           .dropParams = &dropParams,
                                                           .turnAngle = 0.F,
                                                           .acceleration = droneConfig.acceleration(),
-                                                          .angleStep = droneConfig.angleStep(),
+                                                          .angleStep = 0.F,
                                                           .distanceToDropPoint = 0.F});
 
     state = std::make_unique<StoppedState>(*targetSelector);
@@ -97,7 +98,8 @@ auto MissionProcessor::reset() -> void
                       .dropPoint = {0.F, 0.F},        // точка скиду (куди летить дрон)
                       .aimPoint = {0.F, 0.F},         // куди впаде бомба (якщо скинути зараз)
                       .predictedTarget = {0.F, 0.F},  // прогнозована позиція цілі
-                      .speed = 0.F};
+                      .speed = 0.F,
+                      .timeSecSinceStart = 0.F};
 };
 
 auto MissionProcessor::changeSolver(std::unique_ptr<IBallisticsSolver> solver) -> void
@@ -105,12 +107,11 @@ auto MissionProcessor::changeSolver(std::unique_ptr<IBallisticsSolver> solver) -
     this->solver = std::move(solver);
 }
 
-auto MissionProcessor::isTargetHit(SimStep& simStep) -> bool
+auto MissionProcessor::isTargetHit(SimStep& simStep) const -> bool
 {
     // check hitRadius
     if (std::abs(simStep.speed - droneConfig.attackSpeed) < epsilon) {
-        Coord interpolatedPos = targetProvider->getTarget(simStep.targetIdx)->interpolate(context->currentTime, droneConfig.arrayTimeStep);
-        auto DF = simStep.aimPoint.distance(interpolatedPos);
+        auto DF = simStep.aimPoint.distance(simStep.predictedTarget);
 
         if (DF <= droneConfig.hitRadius) {
             return true;
