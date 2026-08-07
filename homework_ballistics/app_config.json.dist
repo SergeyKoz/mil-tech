@@ -1,0 +1,13 @@
+{
+  "studentId": "6666",
+  "testsRepositoryConfig": {
+    "path": "homework_ballistics/data"
+  },
+  "testsStorageServer": {
+    "url": "http://cppmiltech.com.ua",
+    "apiKey": "",
+    "connectionTimeout": 2,
+    "readTimeout": 2,
+    "writeTimeout": 2
+  }
+}

@@ -10,7 +10,7 @@ auto main(int argc, char *argv[]) -> int
     try {
         auto cliParams = CliParams::parse(argc, argv);
 
-        auto configLoader = MissionFactory::createConfigLoader(ConfigLoaderType::CHECKER, AmmoLoaderType::NONE);
+        auto configLoader = MissionFactory::createConfigLoader(ConfigLoaderType::CHECKER, AmmoLoaderType::NONE, nullptr);
         auto targetProvider = MissionFactory::createTargetsProvider(ProviderType::CHECKER);
         auto ballisticsSolver = MissionFactory::createBallisticsSolver(SolverType::TABLE);
         auto rpiCheckerGPIO = std::make_unique<RpiCheckerGPIO>(cliParams.gpioChip, cliParams.startLine, cliParams.dropLine);

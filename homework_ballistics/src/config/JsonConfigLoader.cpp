@@ -1,6 +1,5 @@
 #include "config/JsonConfigLoader.hpp"
 #include <nlohmann/json.hpp>
-#include <fstream>
 
 using json = nlohmann::json;
 
@@ -35,16 +34,14 @@ void resolveAmmo(const json& jsonConfig, DroneConfig& droneConfig, const std::ma
     throw std::runtime_error("Unable to define ammo");
 }
 
-JsonConfigLoader::JsonConfigLoader(std::string filePath, std::map<std::string, AmmoParams> ammoList)
-    : configFilePath(std::move(filePath))
+JsonConfigLoader::JsonConfigLoader(std::ifstream configFile, std::map<std::string, AmmoParams> ammoList)
+    : configFile(std::move(configFile))
     , ammoList(std::move(ammoList))
 {
 }
 
 void JsonConfigLoader::load()
 {
-    std::ifstream configFile{configFilePath};
-
     if (!configFile.is_open()) {
         throw std::runtime_error("Unable to open config file");
     }

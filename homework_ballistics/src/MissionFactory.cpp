@@ -13,6 +13,7 @@
 #include "interfaces/IConfigLoader.hpp"
 #include "interfaces/ITargetsProvider.hpp"
 #include "interfaces/IBallisticsSolver.hpp"
+#include "TestFilesRepository.hpp"
 
 auto MissionFactory::createTargetsProvider(ProviderType providerType) -> std::unique_ptr<ITargetsProvider>
 {
@@ -29,11 +30,11 @@ auto MissionFactory::createTargetsProvider(ProviderType providerType) -> std::un
     throw std::invalid_argument("Unsupported provider type");
 }
 
-auto MissionFactory::createThreadTargetsProvider(const DroneConfig &droneConfig) -> std::unique_ptr<ThreadTargetProvider>
+auto MissionFactory::createThreadTargetsProvider(const DroneConfig &droneConfig,
+                                                 const std::shared_ptr<TestFilesRepository> &testFilesRepository)
+    -> std::unique_ptr<ThreadTargetProvider>
 {
-    const auto *targetsJsonPath = "homework_ballistics/data/targets.json";
-
-    return std::make_unique<ThreadTargetProvider>(targetsJsonPath, droneConfig);
+    return std::make_unique<ThreadTargetProvider>(testFilesRepository->getTargetsFile(), droneConfig);
 }
 
 auto MissionFactory::createBallisticsSolver(SolverType solverType) -> std::unique_ptr<IBallisticsSolver>
@@ -50,7 +51,9 @@ auto MissionFactory::createBallisticsSolver(SolverType solverType) -> std::uniqu
     throw std::invalid_argument("Unsupported solver type");
 }
 
-auto MissionFactory::createConfigLoader(ConfigLoaderType configLoaderType, AmmoLoaderType ammoLoaderType) -> std::unique_ptr<IConfigLoader>
+auto MissionFactory::createConfigLoader(ConfigLoaderType configLoaderType,
+                                        AmmoLoaderType ammoLoaderType,
+                                        const std::shared_ptr<TestFilesRepository> &testFilesRepository) -> std::unique_ptr<IConfigLoader>
 {
     std::map<std::string, AmmoParams> ammoList;
 
@@ -78,9 +81,7 @@ auto MissionFactory::createConfigLoader(ConfigLoaderType configLoaderType, AmmoL
 
     switch (configLoaderType) {
         case ConfigLoaderType::JSON: {
-            const auto *configPath = "homework_ballistics/data/config.json";
-
-            return std::make_unique<JsonConfigLoader>(configPath, ammoList);
+            return std::make_unique<JsonConfigLoader>(testFilesRepository->getConfigFile(), ammoList);
         }
         case ConfigLoaderType::CHECKER:
             return std::make_unique<CheckerConfigLoader>();
@@ -89,12 +90,11 @@ auto MissionFactory::createConfigLoader(ConfigLoaderType configLoaderType, AmmoL
     throw std::invalid_argument("Unsupported loader type");
 }
 
-auto MissionFactory::createSimulationExport(ExportType exportType) -> std::unique_ptr<ISimulationExport>
+auto MissionFactory::createSimulationExport(ExportType exportType, const std::shared_ptr<TestFilesRepository> &testFilesRepository)
+    -> std::unique_ptr<ISimulationExport>
 {
     if (exportType == ExportType::JSON) {
-        const auto *jsonFilePath = "homework_ballistics/data/simulation.json";
-
-        return std::make_unique<JsonSimulationExport>(jsonFilePath);
+        return std::make_unique<JsonSimulationExport>(testFilesRepository->putSimulationFile());
     }
 
     throw std::invalid_argument("Unsupported export type");

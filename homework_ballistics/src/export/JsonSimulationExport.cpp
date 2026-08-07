@@ -1,12 +1,11 @@
 #include "export/JsonSimulationExport.hpp"
-// #include "MissionProcessor.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
 
 using json = nlohmann::json;
 
-JsonSimulationExport::JsonSimulationExport(std::string jsonFilePath)
-    : jsonFilePath(std::move(jsonFilePath))
+JsonSimulationExport::JsonSimulationExport(std::ofstream simulationFile)
+    : simulationFile(std::move(simulationFile))
 {
 }
 
@@ -36,7 +35,6 @@ void JsonSimulationExport::dumpResults(int steps, std::array<SimStep, ThreadMiss
 
         i++;
     }
-    std::ofstream simulationFile(jsonFilePath);
 
     if (!simulationFile.is_open()) {
         throw std::runtime_error("Unable to open JSON file for writing");
