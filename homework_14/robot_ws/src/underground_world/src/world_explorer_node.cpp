@@ -1,7 +1,6 @@
 #include <rclcpp/logging.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include "underground_world/msg/cell_observation.hpp"
-#include "underground_world/msg/enemy_down.hpp"
 #include "underground_world/msg/local_scan.hpp"
 #include "underground_world/msg/move_command.hpp"
 #include "underground_world/msg/student_status.hpp"
@@ -13,7 +12,6 @@ namespace {
 
 constexpr auto kScanTopic = "/robot/local_scan";
 constexpr auto kMoveTopic = "/robot/cmd_move";
-constexpr auto kEnemyDownTopic = "/payload/enemy_down";
 constexpr auto kStatusTopic = "/student/status";
 constexpr auto kTriggerService = "/payload/trigger";
 
@@ -50,16 +48,6 @@ const underground_world::msg::LocalScan reset_contact_cell(underground_world::ms
     }
 
     return localScan;
-}
-
-underground_world::msg::EnemyDown create_enemy_down(const underground_world::msg::CellObservation& contactCell)
-{
-    underground_world::msg::EnemyDown enemyDown;
-    enemyDown.contact_id = contactCell.contact_id;
-    enemyDown.x = contactCell.x;
-    enemyDown.y = contactCell.y;
-
-    return enemyDown;
 }
 
 underground_world::msg::MoveCommand create_move(const underground_world::MoveDirection& move)
@@ -177,7 +165,6 @@ class WorldExplorerNode final : public rclcpp::Node {
             kScanTopic, qos, [this](const underground_world::msg::LocalScan& localScan) { on_local_scan(localScan); });
 
         movePublicher = create_publisher<underground_world::msg::MoveCommand>(kMoveTopic, state_qos);
-        enemyDownPublicher = create_publisher<underground_world::msg::EnemyDown>(kEnemyDownTopic, state_qos);
         statePublicher = create_publisher<underground_world::msg::StudentStatus>(kStatusTopic, state_qos);
 
         triggerClient = create_client<underground_world::srv::PayloadTrigger>(kTriggerService);
@@ -214,8 +201,6 @@ class WorldExplorerNode final : public rclcpp::Node {
         if (contactCell != nullptr) {
             // a contact defined
             state = WorldExplorerState::ENGAGING;
-
-            enemyDownPublicher->publish(create_enemy_down(*contactCell));
 
             auto request = std::make_shared<underground_world::srv::PayloadTrigger::Request>();
             request->contact_id = contactCell->contact_id;
@@ -283,7 +268,6 @@ class WorldExplorerNode final : public rclcpp::Node {
 
     rclcpp::Subscription<underground_world::msg::LocalScan>::SharedPtr localScanSubscription;
     rclcpp::Publisher<underground_world::msg::MoveCommand>::SharedPtr movePublicher;
-    rclcpp::Publisher<underground_world::msg::EnemyDown>::SharedPtr enemyDownPublicher;
     rclcpp::Publisher<underground_world::msg::StudentStatus>::SharedPtr statePublicher;
     rclcpp::Client<underground_world::srv::PayloadTrigger>::SharedPtr triggerClient;
 
