@@ -9,12 +9,12 @@ class Target {
     Target(std::vector<Coord> positions, int timeSteps);
 
     auto update(float time, float timeStep, float simulationStep) -> void;
-
-    Coord position;
-    Speed velocity;
+    auto getTelemetry() const -> TargetTelemetry;
+    auto setTelemetry(const TargetTelemetry& telemetry) -> void;
 
   private:
-    std::mutex dataMutex;
+    mutable std::mutex dataMutex;
     std::vector<Coord> positions;
     int timeSteps;
+    TargetTelemetry telemetry;
 };

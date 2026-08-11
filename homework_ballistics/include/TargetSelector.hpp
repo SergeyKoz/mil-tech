@@ -7,13 +7,20 @@ class Target;
 struct DroneConfig;
 class ITargetsProvider;
 
+struct TargetSnapshot {
+    int index;
+    TargetTelemetry telemetry;
+};
+
 class TargetSelector {
   public:
     TargetSelector(ITargetsProvider& targetProvider);
     void init(const DroneConfig& droneConfig);
-    SelectedTarget selectTarget(const DroneTelemetry& droneTelemetry, DropParameters dropParameters);
+    SelectedTarget selectTarget(DroneTelemetry droneTelemetry, DropParameters dropParameters);
 
   private:
+    std::mutex dataMutex;
+
     const DroneConfig* droneConfig;
     ITargetsProvider* targetProvider;
     float acceleration;

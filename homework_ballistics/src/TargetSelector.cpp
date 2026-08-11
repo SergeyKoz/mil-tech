@@ -2,6 +2,7 @@
 #include "TargetSelector.hpp"
 #include "Target.hpp"
 #include <cmath>
+#include <vector>
 #include "common.hpp"
 #include "interfaces/ITargetsProvider.hpp"
 
@@ -20,28 +21,39 @@ void TargetSelector::init(const DroneConfig& droneConfig)
     fullAccelerationTime = droneConfig.fullAccelerationTime();
 };
 
-auto TargetSelector::selectTarget(const DroneTelemetry& droneTelemetry, DropParameters dropParameters) -> SelectedTarget
+auto TargetSelector::selectTarget(DroneTelemetry droneTelemetry, DropParameters dropParameters) -> SelectedTarget
 {
     float minTotalTime = 0.F;
     int selectedTargetIndex = -1;
-    Target* selectedTarget = nullptr;
-    Target* target = nullptr;
-    Coord currentTargetPos{};
-    Coord selectedTargetPos{};
+    TargetSnapshot selectedTarget = {-1, {}};
+
+    std::vector<TargetSnapshot> targets;
+    const int targetsCount = targetProvider->getTargetsCount();
+    targets.reserve(targetsCount);
+
+    {
+        std::lock_guard<std::mutex> lock(dataMutex);
+        for (int targetIndex = 0; targetIndex < targetsCount; targetIndex++) {
+            auto* target = targetProvider->getTarget(targetIndex);
+
+            if (target == nullptr) {
+                continue;
+            }
+
+            targets.push_back(TargetSnapshot{.index = targetIndex, .telemetry = target->getTelemetry()});
+        }
+    }
 
     float droneSpeed = droneTelemetry.speed.toSpeed();
 
-    for (int targetIndex = 0; targetIndex < targetProvider->getTargetsCount(); targetIndex++) {
-        target = targetProvider->getTarget(targetIndex);
-        currentTargetPos = target->position;
-
+    for (const auto& target : targets) {
         // define total time to reach target
         // totalTime time to stop + time to turn + time to accelerate + time to move
         float timeToTurn{0.F};
 
         // time to stop + time to turn + time to accelerate + time to move
         bool isNeedTurnAngle = false;
-        float targetDirection = droneTelemetry.position.direction(currentTargetPos);
+        float targetDirection = droneTelemetry.position.direction(target.telemetry.position);
         float turnAngle = targetDirection - droneTelemetry.direction;
 
         if (std::fabs(turnAngle) > droneConfig->turnThreshold) {
@@ -50,7 +62,7 @@ auto TargetSelector::selectTarget(const DroneTelemetry& droneTelemetry, DropPara
         }
 
         // drop point calculation
-        float distanceToTarget = currentTargetPos.distance(droneTelemetry.position);
+        float distanceToTarget = target.telemetry.position.distance(droneTelemetry.position);
         float distanceToDropPoint = distanceToTarget - dropParameters.distance;
 
         float reEntryPath = calcReEntryPath(distanceToDropPoint, isNeedTurnAngle, droneSpeed, acceleration, *droneConfig);
@@ -73,13 +85,12 @@ auto TargetSelector::selectTarget(const DroneTelemetry& droneTelemetry, DropPara
 
         if (selectedTargetIndex == -1 || totalTime < minTotalTime) {
             minTotalTime = totalTime;
+            selectedTargetIndex = target.index;
             selectedTarget = target;
-            selectedTargetIndex = targetIndex;
-            selectedTargetPos = currentTargetPos;
         }
     }
 
-    return {.idx = selectedTargetIndex, .target = selectedTarget, .position = selectedTargetPos, .timeToReachPosition = minTotalTime};
+    return {.index = selectedTarget.index, .telemetry = selectedTarget.telemetry, .timeToReachPosition = minTotalTime};
 };
 
 auto TargetSelector::calcReEntryPath(

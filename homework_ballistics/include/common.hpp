@@ -1,7 +1,7 @@
 #pragma once
 
 #define ENABLE_LOG 1
-#define ENABLE_DEBUG 0
+#define ENABLE_DEBUG 1
 
 #if ENABLE_LOG
 #define LOG(msg) std::cout << "[LOG] " << msg << '\n'
@@ -162,10 +162,14 @@ struct SimStep {
     float timeSecSinceStart;
 };
 
-struct SelectedTarget {
-    int idx;
-    Target *target;
+struct TargetTelemetry {
     Coord position;
+    Speed speed;
+};
+
+struct SelectedTarget {
+    int index;
+    TargetTelemetry telemetry;
     float timeToReachPosition;
 };
 
