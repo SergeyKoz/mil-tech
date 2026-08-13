@@ -3,6 +3,7 @@
 -include ./homework_ballistics/BallisticsApp.Makefile
 -include ./homework_13/AntiDroneTurretApp.Makefile
 -include ./homework_14/UndergroundWorldApp.Makefile
+-include ./homework_16/I2CApp.Makefile
 
 build:
 	cmake --preset debug && cmake --build --preset debug --target ballistics_cli --target ballistics_tests
