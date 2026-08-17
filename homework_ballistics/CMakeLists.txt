@@ -68,13 +68,12 @@ add_executable(rpi_simulation_app src/rpi.cpp)
 
 target_sources(
     rpi_simulation_app
-    PRIVATE src/MissionFactory.cpp
+    PRIVATE src/RpiMissionFactory.cpp
             src/IntervalWorker.cpp
             src/ThreadDronePhysics.cpp
             src/DroneAutopilot.cpp
             src/Target.cpp
             src/providers/JsonTargetProvider.cpp
-            src/providers/ThreadTargetProvider.cpp
             src/providers/JsonAmmoProvider.cpp
             src/providers/CheckerTargetProvider.cpp
             src/solvers/AnalyticalSolver.cpp
@@ -82,7 +81,6 @@ target_sources(
             src/solvers/TableSolver.cpp
             src/config/JsonConfigLoader.cpp
             src/config/CheckerConfigLoader.cpp
-            src/export/JsonSimulationExport.cpp
             src/states/StoppedState.cpp
             src/states/MovingState.cpp
             src/states/TurningState.cpp
