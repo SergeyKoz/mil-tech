@@ -1,6 +1,6 @@
 #pragma once
 
-#define ENABLE_LOG 0
+#define ENABLE_LOG 1
 #define ENABLE_DEBUG 1
 
 #if ENABLE_LOG
@@ -28,7 +28,7 @@ struct Coord {
     float x;
     float y;
 
-    Coord operator+(const Coord& other) const
+    Coord operator+(const Coord &other) const
     {
         Coord result;
         result.x = x + other.x;
@@ -36,7 +36,7 @@ struct Coord {
         return result;
     }
 
-    Coord operator-(const Coord& other) const
+    Coord operator-(const Coord &other) const
     {
         Coord result;
         result.x = x - other.x;
@@ -48,20 +48,20 @@ struct Coord {
 
     Coord operator/(float scalar) const { return {x / scalar, y / scalar}; }
 
-    bool operator==(const Coord& other) const
+    bool operator==(const Coord &other) const
     {
         const float epsilon = 1e-5f;
 
         return std::abs(x - other.x) < epsilon && std::abs(y - other.y) < epsilon;
     }
 
-    bool operator!=(const Coord& other) const { return !(*this == other); }
+    bool operator!=(const Coord &other) const { return !(*this == other); }
 
     Coord move(float distance, float direction) { return {x + distance * std::cos(direction), y + distance * std::sin(direction)}; }
 
-    float distance(const Coord& other) const { return std::sqrt(std::pow((other.x - x), 2) + std::pow((other.y - y), 2)); }
+    float distance(const Coord &other) const { return std::sqrt(std::pow((other.x - x), 2) + std::pow((other.y - y), 2)); }
 
-    float direction(const Coord& other) const
+    float direction(const Coord &other) const
     {
         float direction = std::atan2(other.y - y, other.x - x);
 
@@ -81,7 +81,7 @@ struct Speed {
 
     Speed fromSpeed(float speed, float direction) const { return {.x = speed * std::cos(direction), .y = speed * std::sin(direction)}; }
 
-    Speed& operator+=(const Speed& other)
+    Speed &operator+=(const Speed &other)
     {
         x += other.x;
         y += other.y;
@@ -89,7 +89,7 @@ struct Speed {
         return *this;
     }
 
-    Speed operator+(const Speed& other) const
+    Speed operator+(const Speed &other) const
     {
         Speed result;
         result.x = x + other.x;
@@ -98,7 +98,7 @@ struct Speed {
         return result;
     }
 
-    Speed& operator-=(const Speed& other)
+    Speed &operator-=(const Speed &other)
     {
         x -= other.x;
         y -= other.y;
@@ -106,7 +106,7 @@ struct Speed {
         return *this;
     }
 
-    Speed operator-(const Speed& other) const
+    Speed operator-(const Speed &other) const
     {
         Speed result;
         result.x = x - other.x;
@@ -164,7 +164,7 @@ struct SimStep {
 
 struct SelectedTarget {
     int idx;
-    Target* target;
+    Target *target;
     Coord position;
     float timeToReachPosition;
 };
@@ -179,11 +179,11 @@ struct DroneTelemetry {
 
 struct DroneContext {
     float currentTime;
-    SimStep* simulationStep;
-    DroneConfig* droneConfig;
-    ThreadDronePhysics* dronePhysics;
+    SimStep *simulationStep;
+    DroneConfig *droneConfig;
+    ThreadDronePhysics *dronePhysics;
     DroneTelemetry droneTelemetry;
-    DropParameters* dropParams;
+    DropParameters *dropParams;
     float turnAngle;
     float acceleration;
     float angleStep;

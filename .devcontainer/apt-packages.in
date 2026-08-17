@@ -34,3 +34,6 @@ cmake-format
 ninja-build
 
 mc
+
+libgpiod-dev
+gpiod

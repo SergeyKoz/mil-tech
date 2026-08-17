@@ -3,9 +3,11 @@
 #include "MissionFactory.hpp"
 #include "providers/JsonTargetProvider.hpp"
 #include "providers/ThreadTargetProvider.hpp"
+#include "providers/CheckerTargetProvider.hpp"
 #include "solvers/AnalyticalSolver.hpp"
 #include "solvers/TableSolver.hpp"
 #include "config/JsonConfigLoader.hpp"
+#include "config/CheckerConfigLoader.hpp"
 #include "export/JsonSimulationExport.hpp"
 #include "providers/JsonAmmoProvider.hpp"
 #include "interfaces/IConfigLoader.hpp"
@@ -14,11 +16,15 @@
 
 auto MissionFactory::createTargetsProvider(ProviderType providerType) -> std::unique_ptr<ITargetsProvider>
 {
-    if (providerType == ProviderType::JSON) {
-        const auto *targetsJsonPath = "homework_ballistics/data/targets.json";
+    switch (providerType) {
+        case ProviderType::JSON: {
+            const auto *targetsJsonPath = "homework_ballistics/data/targets.json";
 
-        return std::make_unique<JsonTargetProvider>(targetsJsonPath);
-    }
+            return std::make_unique<JsonTargetProvider>(targetsJsonPath);
+        }
+        case ProviderType::CHECKER:
+            return std::make_unique<CheckerTargetProvider>();
+    };
 
     throw std::invalid_argument("Unsupported provider type");
 }
@@ -66,13 +72,19 @@ auto MissionFactory::createConfigLoader(ConfigLoaderType configLoaderType, AmmoL
             };
 
             break;
+        case AmmoLoaderType::NONE:
+            break;
     };
 
-    if (configLoaderType == ConfigLoaderType::JSON) {
-        const auto *configPath = "homework_ballistics/data/config.json";
+    switch (configLoaderType) {
+        case ConfigLoaderType::JSON: {
+            const auto *configPath = "homework_ballistics/data/config.json";
 
-        return std::make_unique<JsonConfigLoader>(configPath, ammoList);
-    }
+            return std::make_unique<JsonConfigLoader>(configPath, ammoList);
+        }
+        case ConfigLoaderType::CHECKER:
+            return std::make_unique<CheckerConfigLoader>();
+    };
 
     throw std::invalid_argument("Unsupported loader type");
 }

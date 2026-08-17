@@ -209,5 +209,41 @@
         "clear": true
       }
     },
+    {
+      // Default build task: Ctrl+Shift+B запускає debug preset, потім build.
+      "label": "CMake: configure and build rpi_simulation_app",
+      "type": "shell",
+      "command": "cmake --preset debug && cmake --build --preset debug --target rpi_simulation_app",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      // Default build task: Ctrl+Shift+B запускає debug preset, потім build.
+      "label": "Rpi Checker: start",
+      "type": "shell",
+      "command": "./homework_ballistics/checker/checker_pi_armv6 1 --hw --uart /dev/ttyAMA0 --gpiochip gpiochip0 --start-line 27 --drop-line 22",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
   ]
 }
