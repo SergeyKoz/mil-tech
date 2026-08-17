@@ -21,7 +21,12 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
     GIT_TAG v0.18.3)
 
-FetchContent_MakeAvailable(nlohmann_json httplib)
+FetchContent_Declare(
+    c_library_v2
+    GIT_REPOSITORY https://github.com/mavlink/c_library_v2.git
+    GIT_TAG master)
+
+FetchContent_MakeAvailable(nlohmann_json httplib c_library_v2)
 
 # Один executable для задачі з UGV odometry.
 add_executable(ballistics_app src/main.cpp)
@@ -51,9 +56,17 @@ target_sources(
             src/states/DeceleratingState.cpp
             src/TargetSelector.cpp
             src/TestFilesRepository.cpp
-            src/TestFilesStorage.cpp)
+            src/TestFilesStorage.cpp
+            src/mavlink/MavlinkClient.cpp
+            src/mavlink/HeartbeatWorker.cpp
+            src/mavlink/SysStatusWorker.cpp
+            src/mavlink/GlobalPositionWorker.cpp
+            src/mavlink/AttitudeWorker.cpp
+            src/mavlink/MavlinkTargetProcessor.cpp)
 
 target_include_directories(ballistics_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# target_include_directories(ballistics_app SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/c_library_v2)
+target_include_directories(ballistics_app SYSTEM PRIVATE ${c_library_v2_SOURCE_DIR})
 
 target_link_libraries(ballistics_app PRIVATE nlohmann_json::nlohmann_json httplib::httplib
                                              OpenSSL::SSL OpenSSL::Crypto)

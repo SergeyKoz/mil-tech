@@ -16,7 +16,7 @@
     "timeStep": 0.1,
     "physicsTimeStep": 0.01,
     "hitRadius": 3,
-    "timeScale": 10,
+    "timeScale": 1,
     "targetTimeStep": 0.05
   },
   "targetArrayTimeStep": 10

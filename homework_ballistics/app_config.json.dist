@@ -9,5 +9,16 @@
     "connectionTimeout": 2,
     "readTimeout": 2,
     "writeTimeout": 2
+  },
+  "mavlink": {
+    "systemId": 1,
+    "qgs": {
+      "ip": "127.0.0.1",
+      "port": 14550,
+      "originLocation": {
+        "latitude": 50.4501,
+        "longtitude": 30.5234
+      },
+    }    
   }
 }

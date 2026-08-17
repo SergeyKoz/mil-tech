@@ -7,8 +7,7 @@
 
 auto main(int argc, char *argv[]) -> int
 {
-    try
-    {
+    try {
         auto cliParams = CliParams::parse(argc, argv);
 
         auto configLoader = RpiMissionFactory::createConfigLoader(ConfigLoaderType::CHECKER, AmmoLoaderType::NONE);
@@ -29,20 +28,17 @@ auto main(int argc, char *argv[]) -> int
 
         LOG("Mission completed successfully.");
     }
-    catch (const std::runtime_error &ex)
-    {
+    catch (const std::runtime_error &ex) {
         std::cerr << ex.what() << '\n';
 
         return 1;
     }
-    catch (const std::invalid_argument &ex)
-    {
+    catch (const std::invalid_argument &ex) {
         std::cerr << ex.what() << '\n';
 
         return 1;
     }
-    catch (const std::exception &ex)
-    {
+    catch (const std::exception &ex) {
         std::cerr << ex.what() << '\n';
 
         return 1;

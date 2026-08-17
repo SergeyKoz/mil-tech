@@ -176,6 +176,7 @@ struct SelectedTarget {
 struct DroneTelemetry {
     DroneStatus state;
     Coord position;
+    float altitude;
     Speed speed;
     float direction;
     float timeSinceStart;
@@ -188,6 +189,7 @@ struct DroneContext {
     ThreadDronePhysics *dronePhysics;
     DroneTelemetry droneTelemetry;
     DropParameters *dropParams;
+    SelectedTarget selectedTarget;
     float turnAngle;
     float acceleration;
     float angleStep;
@@ -215,8 +217,25 @@ struct TestsRepositoryConfig {
     std::string path;
 };
 
+struct Location {
+    float latitude;
+    float longtitude;
+};
+
+struct QgsConfig {
+    std::string ip;
+    int port;
+    Location originLocation;
+};
+
+struct MavlinkConfig {
+    int systemId;
+    QgsConfig qgsConfig;
+};
+
 struct AppConfig {
     std::string studentId;
     TestsRepositoryConfig testsRepositoryConfig;
     TestsStorageConfig testsStorageServer;
+    MavlinkConfig mavlinkConfig;
 };

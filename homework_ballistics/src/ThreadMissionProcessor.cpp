@@ -1,8 +1,8 @@
 #include "ThreadMissionProcessor.hpp"
 #include "TargetSelector.hpp"
-#include "Target.hpp"
 #include "interfaces/ISimulationExport.hpp"
 #include "interfaces/IBallisticsSolver.hpp"
+#include "interfaces/ITargetProcessor.hpp"
 #include "states/AcceleratingState.hpp"
 #include "states/DeceleratingState.hpp"
 #include "states/MovingState.hpp"
@@ -49,6 +49,7 @@ auto ThreadMissionProcessor::init() -> void
                                                           .dronePhysics = dronePhysics,
                                                           .droneTelemetry = {},
                                                           .dropParams = &dropParams,
+                                                          .selectedTarget = {},
                                                           .turnAngle = 0.F,
                                                           .acceleration = droneConfig.acceleration(),
                                                           .angleStep = droneConfig.angularSpeed,  // droneConfig.angleStep(),
@@ -84,6 +85,10 @@ auto ThreadMissionProcessor::intervalTask() -> void
     }
 
     if (isTargetHit(simulationStep)) {
+        for (const auto& targetProcessor : targetProcessors) {
+            targetProcessor->processTarget(context->selectedTarget, context->droneTelemetry);
+        }
+
         stopRequested = true;
 
         return;
@@ -96,12 +101,18 @@ auto ThreadMissionProcessor::intervalTask() -> void
     currentStep++;
 }
 
+void ThreadMissionProcessor::addTargetProcessor(std::unique_ptr<ITargetProcessor> targetProcessor)
+{
+    targetProcessors.push_back(std::move(targetProcessor));
+}
+
 ThreadMissionProcessor::~ThreadMissionProcessor() = default;
 
 auto ThreadMissionProcessor::calculateSimulationStep() -> SimStep
 {
     auto speed = context->droneTelemetry.speed.toSpeed();
-    auto [index, targetTelemetry, timeToReachPosition] = targetSelector->selectTarget(context->droneTelemetry, *context->dropParams);
+    context->selectedTarget = targetSelector->selectTarget(context->droneTelemetry, *context->dropParams);
+    auto [index, targetTelemetry, timeToReachPosition] = context->selectedTarget;
     Coord targetPosition = targetTelemetry.position;
     Speed targetSpeed = targetTelemetry.speed;
     auto targetDistance = context->droneTelemetry.position.distance(targetPosition);

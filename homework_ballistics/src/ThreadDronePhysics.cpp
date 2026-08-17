@@ -7,6 +7,7 @@ ThreadDronePhysics::ThreadDronePhysics(const DroneConfig& droneConfig)
     , droneTelemetry({
           .state = STOPPED,
           .position = droneConfig.startPos,
+          .altitude = droneConfig.altitude,
           .speed = {0.F, 0.F},
           .direction = droneConfig.initialDir,
           .timeSinceStart = 0.F,

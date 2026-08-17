@@ -6,19 +6,12 @@
 #include "ThreadMissionProcessor.hpp"
 #include "TestFilesRepository.hpp"
 #include "config/AppConfigLoader.hpp"
+#include "mavlink/MavlinkClient.hpp"
+#include "mavlink/MavlinkTargetProcessor.hpp"
 
 auto main() -> int
 {
-    constexpr std::array<TestCode, 10> tests = {TestCode::T1,
-                                                TestCode::T2,
-                                                TestCode::T3,
-                                                TestCode::T4,
-                                                TestCode::T5,
-                                                TestCode::T6,
-                                                TestCode::T7,
-                                                TestCode::T8,
-                                                TestCode::T9,
-                                                TestCode::T10};
+    constexpr std::array<TestCode, 10> tests = {TestCode::T1};
 
     try {
         auto appConfig = AppConfigLoader::load("app_config.json");
@@ -39,23 +32,29 @@ auto main() -> int
                 targetProvider->load();
 
                 auto dronePhysics = std::make_unique<ThreadDronePhysics>(droneConfig);
+                auto mavlinkClient = std::make_shared<MavlinkClient>(appConfig.mavlinkConfig, *dronePhysics.get());
 
                 auto missionProcessor = std::make_unique<ThreadMissionProcessor>(
                     std::move(ballisticsSolver), droneConfig, *dronePhysics.get(), *targetProvider, std::move(simulationExport));
 
                 missionProcessor->init();
+                missionProcessor->addTargetProcessor(
+                    std::make_unique<MavlinkTargetProcessor>(appConfig.mavlinkConfig, mavlinkClient.get()));
 
                 missionProcessor->start();
                 dronePhysics->start();
                 targetProvider->start();
+                mavlinkClient->start();
 
-                while (!missionProcessor->isThreadReady() || !dronePhysics->isThreadReady() || !targetProvider->isThreadReady()) {
+                while (!missionProcessor->isThreadReady() || !dronePhysics->isThreadReady() || !targetProvider->isThreadReady() ||
+                       !mavlinkClient->isThreadReady()) {
                     std::this_thread::yield();
                 }
 
                 missionProcessor->wait();
                 dronePhysics->stop();
                 targetProvider->stop();
+                mavlinkClient->stop();
 
                 missionProcessor->dumpResults();
             }
