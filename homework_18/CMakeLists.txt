@@ -44,8 +44,10 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
     Core/Src/app.cpp
+    Core/Src/devices/MPU6050.cpp
+    Core/Src/devices/BMP280.cpp
+    Core/Src/devices/HTU21.cpp
 )
 
 # Add include paths
