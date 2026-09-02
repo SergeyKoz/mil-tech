@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Flash only (ST-LINK)",
+      "type": "shell",
+      "command": "STM32_Programmer_CLI",
+      "args": [
+        "-c", "port=SWD", "mode=UR",
+        "-w", "${workspaceFolder}/build/Debug/homework_18.elf",
+        "-v", "-rst"
+        ],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+    ]
+}

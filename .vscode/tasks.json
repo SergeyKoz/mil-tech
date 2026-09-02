@@ -261,5 +261,22 @@
         "clear": true
       }
     },
+    {
+      "label": "CMake: configure and build stm32_server_app",
+      "type": "shell",
+      "command": "cmake --preset debug && cmake --build --preset debug --target stm32_server_app",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
   ]
 }
