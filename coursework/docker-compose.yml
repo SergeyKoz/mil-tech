@@ -1,0 +1,77 @@
+services:
+  ros2-dev:
+    build:
+      context: ./docker # Шлях до папки з Dockerfile
+      dockerfile: Dockerfile.ros2 # Назва файлу (якщо він лежить в інший папці, наприклад .devcontainer/Dockerfile)
+      args:
+        CONTAINER_USER: ${USER:-pi}
+        USER_UID: ${UID:-1000}
+        USER_GID: ${GID:-1000}
+        WORKSPACE_FOLDER: /home/${USER:-pi}/mil-tech
+        TARGETPLATFORM: linux/arm64
+    container_name: ros2_jazzy_rpi5
+    platform: linux/arm64
+    restart: unless-stopped
+
+    # Використовуємо мережу хоста, щоб ROS 2 DDS ноди (ROS Topics/Nodes) 
+    # бачили інші пристрої в мережі та на самій Raspberry Pi
+    network_mode: host
+
+    cap_add:
+      - SYS_PTRACE
+
+    security_opt:
+      - seccomp:unconfined
+
+    # Надаємо привілейований доступ для роботи з GPIO, I2C, SPI, камери тощо
+    privileged: true
+
+    # Додаємо внутрішнього користувача до хостових груп gpio, dialout, video
+    group_add:
+      - "986" # GID групи gpio з вашого `ls -la` (дає доступ до gpiochip*)
+      - "20" # dialout (для /dev/ttyAMA*)
+      - "44" # video (для камери)
+
+    environment:
+      - ROS_DOMAIN_ID=0
+      - DISPLAY=${DISPLAY:-:0}
+      - QT_X11_NO_MITSHM=1
+
+    volumes:
+      - .:/home/${USER:-pi}/mil-tech
+      # Передаємо системний сокет X11 для виводу GUI (Rviz2, rqt, Gazebo)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # Монтуємо локальний час з RPi5
+      - /etc/localtime:/etc/localtime:ro
+      # - ~/.Xauthority:/home/${USER:-pi}/.Xauthority:rw
+
+    tty: true
+    stdin_open: true
+
+    command: /bin/bash
+
+  ardupilot-sitl:
+    build:
+      context: ./docker # Шлях до папки з Dockerfile
+      dockerfile: Dockerfile.ardupilot # Назва файлу (якщо він лежить в інший папці, наприклад .devcontainer/Dockerfile)
+    container_name: ardupilot-sitl
+    environment:
+      VEHICLE: Copter
+      SPEEDUP: "1"
+      # За замовчуванням QGC слухає UDP 14550 на цьому ж хостi.
+      # Якщо QGC не пiдключається, спочатку лишити 127.0.0.1 i пересоздати контейнер.
+      # GCS_HOST з /etc/resolv.conf потрiбен тiльки для окремих WSL2 NAT-конфiгурацiй.
+      GCS_HOST: "${GCS_HOST:-127.0.0.1}"
+      GCS_PORT: "14550"
+      # C2 service працює в host network, тому 127.0.0.1 вказує на той самий network namespace.
+      C2_HOST: "127.0.0.1"
+      C2_PORT: "14551"
+      # Стартова позицiя SITL
+      LAT: "50.4501"
+      LON: "30.5234"
+      ALT: "95"
+      DIR: "90"
+    network_mode: host
+    # Docker Desktop на macOS не пiдтримує network_mode: host.
+    # Для macOS потрiбно прибрати network_mode та явно опублiкувати порти.
+    restart: unless-stopped

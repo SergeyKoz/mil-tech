@@ -3,12 +3,26 @@
 Усі помітні зміни в цьому репо фіксуються тут.
 Формат - [Keep a Changelog](https://keepachangelog.com/uk/1.1.0/), дати в ISO 8601.
 
+## 2026-09-21
+
+### Added
+
+- [Coursework]  Autopilot under ROS2 control on RPI5
+
+  [Пояснювальний документ](https://github.com/SergeyKoz/mil-tech/blob/feature/coursework/ballistics-ros2-rpi-qgs/coursework/docs/README.md)
+
+## 2026-09-02
+
+### Added
+
+- [Home work 18] STM32 на двох інтерфейсах
+
 
 ## 2026-08-24
 
 ### Added
 
-- [Home work 1617] Mavlink
+- [Home work 17] Mavlink
 
 
 ## 2026-08-13
