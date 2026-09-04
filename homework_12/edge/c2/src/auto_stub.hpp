@@ -9,6 +9,13 @@ class UdpSocket;
 struct Waypoint {
     float north = 0.0f;
     float east = 0.0f;
+
+    bool operator==(const Waypoint &other) const
+    {
+        const float epsilon = 1e-5f;
+
+        return std::abs(north - other.north) < epsilon && std::abs(east - other.east) < epsilon;
+    }
 };
 
 class AutoStub {
@@ -17,7 +24,7 @@ public:
     ~AutoStub();
 
     Waypoint getWaypoint();
-    bool hasWaypoint() const;
+    bool hasWaypoint();
 private:
     mutable std::mutex waypointMutex;
     Waypoint waypoint;

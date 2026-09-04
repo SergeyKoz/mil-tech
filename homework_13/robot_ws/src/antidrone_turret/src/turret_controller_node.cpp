@@ -194,8 +194,8 @@ class TurretControllerNode final : public rclcpp::Node {
 
             if (turretState.triggerState == antidrone_turret::TurretModelTrigger::REQUESTED) {
                 auto request = std::make_shared<antidrone_turret::srv::TriggerActuator::Request>();
-                request->confidence = target.distance_m;
-                request->distance_m = target.confidence;
+                request->confidence = target.confidence;
+                request->distance_m = target.distance_m;
 
                 RCLCPP_INFO(get_logger(), "PULL trigger");
 

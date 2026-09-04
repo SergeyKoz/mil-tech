@@ -20,10 +20,16 @@ Waypoint AutoStub::getWaypoint() {
     return waypoint;
 }
 
-bool AutoStub::hasWaypoint() const {
+bool AutoStub::hasWaypoint() {
     std::lock_guard<std::mutex> lock(waypointMutex);
 
-    return waypointReceived;
+    if (waypointReceived) {
+        waypointReceived = false;
+
+        return true;
+    }
+
+    return false;
 }
 
 AutoStub::~AutoStub() {
@@ -62,17 +68,19 @@ void AutoStub::readLoop() {
 
             Waypoint parsed{};
             if (parseWaypoint(message, parsed)) {
-                {
+                if (parsed != waypoint) {
                     std::lock_guard<std::mutex> lock(waypointMutex);
                     waypoint = parsed;
                     waypointReceived = true;
                 }
 
-                std::cout << "[AutoStub] waypoint updated: north="
+                if (waypointReceived) {
+                    std::cout << "[AutoStub] waypoint updated: north="
                           << parsed.north
                           << ", east="
                           << parsed.east
                           << "\n";
+                }
             } else {
                 std::cerr << "[AutoStub] ignored message: cannot parse waypoint\n";
             }
