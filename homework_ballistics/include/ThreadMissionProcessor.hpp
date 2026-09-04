@@ -10,8 +10,8 @@ class ITargetsProvider;
 class IDroneState;
 class IBallisticsSolver;
 class ISimulationExport;
+class ITargetProcessor;
 class TargetSelector;
-class ThreadDronePhysics;
 class ThreadDronePhysics;
 struct DroneConfig;
 
@@ -24,6 +24,7 @@ class ThreadMissionProcessor : public IntervalWorker {
                            ITargetsProvider& targetProvider,
                            std::unique_ptr<ISimulationExport> simulationExport);
     void init();
+    void addTargetProcessor(std::unique_ptr<ITargetProcessor> targetProcessor);
 
     auto dumpResults() -> void;
     ~ThreadMissionProcessor();
@@ -45,6 +46,7 @@ class ThreadMissionProcessor : public IntervalWorker {
     DropParameters dropParams{};
     SimStep simulationStep{};
     std::unique_ptr<DroneContext> context;
+    std::vector<std::unique_ptr<ITargetProcessor>> targetProcessors{};
 
     std::map<DroneStatus, std::function<std::unique_ptr<IDroneState>(TargetSelector&)>> states;
 

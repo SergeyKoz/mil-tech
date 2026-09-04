@@ -1,6 +1,8 @@
 #include "config/AppConfigLoader.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
+#include <string>
+#include "common.hpp"
 
 using json = nlohmann::json;
 
@@ -13,6 +15,13 @@ void from_json(const json& j, AppConfig& appConfig)
                                                       .connectionTimeout = j["testsStorageServer"]["connectionTimeout"].get<long>(),
                                                       .readTimeout = j["testsStorageServer"]["readTimeout"].get<long>(),
                                                       .writeTimeout = j["testsStorageServer"]["writeTimeout"].get<long>()};
+
+    appConfig.mavlinkConfig = MavlinkConfig{
+        .systemId = j["mavlink"]["systemId"].get<int>(),
+        .qgsConfig = QgsConfig{.ip = j["mavlink"]["qgs"]["ip"].get<std::string>(),
+                               .port = j["mavlink"]["qgs"]["port"].get<int>(),
+                               .originLocation = Location{.latitude = j["mavlink"]["qgs"]["originLocation"]["latitude"].get<float>(),
+                                                          .longtitude = j["mavlink"]["qgs"]["originLocation"]["longtitude"].get<float>()}}};
 }
 
 auto AppConfigLoader::load(const std::string& configFile) -> AppConfig

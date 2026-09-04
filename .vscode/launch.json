@@ -218,9 +218,9 @@
         "--gpiochip",
         "gpiochip0",
         "--start-line",
-        "23",
+        "24",
         "--drop-line",
-        "24"
+        "23"
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
