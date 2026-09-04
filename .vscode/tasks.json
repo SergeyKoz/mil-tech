@@ -245,5 +245,22 @@
         "clear": true
       }
     },
+    {
+      "label": "CMake: configure and build underground_world",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/homework_14/robot_ws && colcon build --symlink-install --packages-select underground_world --cmake-args -DCMAKE_BUILD_TYPE=Debug",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
   ]
 }
