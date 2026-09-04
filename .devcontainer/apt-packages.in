@@ -46,3 +46,4 @@ ros-jazzy-rqt-graph
 # CycloneDDS використовується як default RMW для стабільнішого discovery
 # у devcontainer.
 ros-jazzy-rmw-cyclonedds-cpp
+libssl-dev

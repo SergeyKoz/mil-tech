@@ -101,23 +101,23 @@ ThreadMissionProcessor::~ThreadMissionProcessor() = default;
 auto ThreadMissionProcessor::calculateSimulationStep() -> SimStep
 {
     auto speed = context->droneTelemetry.speed.toSpeed();
-    auto selectedTarget = targetSelector->selectTarget(context->droneTelemetry, *context->dropParams);
-    Coord targetPosition = selectedTarget.target->position;
-    Speed targetSpeed = selectedTarget.target->velocity;
+    auto [index, targetTelemetry, timeToReachPosition] = targetSelector->selectTarget(context->droneTelemetry, *context->dropParams);
+    Coord targetPosition = targetTelemetry.position;
+    Speed targetSpeed = targetTelemetry.speed;
     auto targetDistance = context->droneTelemetry.position.distance(targetPosition);
     Coord predictedTarget = {
-        selectedTarget.position.x + targetSpeed.x * selectedTarget.timeToReachPosition,
-        selectedTarget.position.y + targetSpeed.y * selectedTarget.timeToReachPosition,
+        targetPosition.x + targetSpeed.x * timeToReachPosition,
+        targetPosition.y + targetSpeed.y * timeToReachPosition,
     };
 
-    DEBUG("time" << selectedTarget.timeToReachPosition);
+    DEBUG("time" << timeToReachPosition);
 
-    context->distanceToDropPoint = context->simulationStep->pos.distance(context->simulationStep->predictedTarget) - dropParams.distance;
+    context->distanceToDropPoint = context->simulationStep->pos.distance(predictedTarget) - dropParams.distance;
 
     return {.pos = context->droneTelemetry.position,         // позиція дрона
             .direction = context->droneTelemetry.direction,  // напрямок (рад)
             .state = context->droneTelemetry.state,          // стан автомата(0 - 4)
-            .targetIdx = selectedTarget.idx,                 // індекс поточної цілі
+            .targetIdx = index,                              // індекс поточної цілі
             .dropPoint = context->simulationStep->pos.move(targetDistance - dropParams.distance,
                                                            context->simulationStep->direction),  // точка скиду (куди летить дрон)
             .aimPoint = context->simulationStep->pos.move(dropParams.distance,

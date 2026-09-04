@@ -8,10 +8,10 @@
 
 using json = nlohmann::json;
 
-ThreadTargetProvider::ThreadTargetProvider(std::string jsonFilePath, const DroneConfig& droneConfig)
+ThreadTargetProvider::ThreadTargetProvider(std::ifstream targetsFile, const DroneConfig& droneConfig)
     : IntervalWorker(std::chrono::milliseconds(static_cast<int>(std::round(droneConfig.simTimeStep * 1000))),
                      static_cast<int>(droneConfig.timeScale))
-    , jsonFilePath(std::move(jsonFilePath))
+    , targetsFile(std::move(targetsFile))
     , targetsCount(0)
     , timeSteps(0)
     , arrayTimeStep(static_cast<int>(droneConfig.arrayTimeStep))
@@ -20,14 +20,12 @@ ThreadTargetProvider::ThreadTargetProvider(std::string jsonFilePath, const Drone
 
 void ThreadTargetProvider::load()
 {
-    std::ifstream jsonFile{jsonFilePath};
-
-    if (!jsonFile.is_open()) {
+    if (!targetsFile.is_open()) {
         throw std::runtime_error("Unable to open JSON file");
     }
 
     try {
-        auto targetsJson = json::parse(jsonFile);
+        auto targetsJson = json::parse(targetsFile);
 
         targetsCount = targetsJson["targetCount"];
         timeSteps = targetsJson["timeSteps"];
@@ -49,7 +47,7 @@ void ThreadTargetProvider::load()
         throw std::runtime_error(std::string("Error parsing JSON file: ") + ex.what());
     }
 
-    jsonFile.close();
+    targetsFile.close();
 }
 
 auto ThreadTargetProvider::getTarget(int index) -> Target*

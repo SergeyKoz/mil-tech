@@ -162,10 +162,14 @@ struct SimStep {
     float timeSecSinceStart;
 };
 
-struct SelectedTarget {
-    int idx;
-    Target *target;
+struct TargetTelemetry {
     Coord position;
+    Speed speed;
+};
+
+struct SelectedTarget {
+    int index;
+    TargetTelemetry telemetry;
     float timeToReachPosition;
 };
 
@@ -195,4 +199,24 @@ struct DroneCommand {
     float angleSpeed;
     float acceleration;
     float maxSpeed;
+};
+
+enum TestCode { T1 = 1, T2 = 2, T3 = 3, T4 = 4, T5 = 5, T6 = 6, T7 = 7, T8 = 8, T9 = 9, T10 = 10 };
+
+struct TestsStorageConfig {
+    std::string url;
+    std::string apiKey;
+    long connectionTimeout;
+    long readTimeout;
+    long writeTimeout;
+};
+
+struct TestsRepositoryConfig {
+    std::string path;
+};
+
+struct AppConfig {
+    std::string studentId;
+    TestsRepositoryConfig testsRepositoryConfig;
+    TestsStorageConfig testsStorageServer;
 };

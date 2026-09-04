@@ -1,6 +1,6 @@
 .PHONY: build
 
--include BallisticsApp.Makefile
+-include ./homework_ballistics/BallisticsApp.Makefile
 -include ./homework_13/AntiDroneTurretApp.Makefile
 -include ./homework_14/UndergroundWorldApp.Makefile
 -include ./homework_12/C2App.Makefile

@@ -3,6 +3,12 @@
 Усі помітні зміни в цьому репо фіксуються тут.
 Формат - [Keep a Changelog](https://keepachangelog.com/uk/1.1.0/), дати в ISO 8601.
 
+## 2026-08-07
+
+### Added
+
+- [Home work 15] Send simulation result to the course website 
+
 ## 2026-07-26
 
 ### Fixed

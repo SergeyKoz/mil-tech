@@ -1,7 +1,6 @@
 #include "providers/CheckerTargetProvider.hpp"
 #include "common.hpp"
 #include <memory>
-#include <fstream>
 #include <vector>
 #include "Target.hpp"
 
@@ -42,24 +41,30 @@ auto CheckerTargetProvider::setTarget(int index, Coord pos, float time) -> void
     else {
         auto currentTime = currentTargetsTimes.at(index);
         auto *currentTarget = currentTargets.at(index).get();
+        auto currentTtargetTelemetry = currentTarget->getTelemetry();
 
         if (std::abs(currentTime - time) > epsilon) {
             auto previousTtarget = !previousTargets.contains(index) ? std::make_unique<Target>(std::vector<Coord>{Coord{}}, 0)
                                                                     : std::move(previousTargets.at(index));
 
-            previousTtarget->position = currentTarget->position;
+            auto previousTtargetTelemetry = previousTtarget->getTelemetry();
+            previousTtarget->setTelemetry({.position = currentTtargetTelemetry.position, .speed = previousTtargetTelemetry.speed});
+
             previousTargetsTimes.insert_or_assign(index, currentTime);
             previousTargets.insert_or_assign(index, std::move(previousTtarget));
         }
 
         currentTargetsTimes.insert_or_assign(index, time);
-        currentTarget->position = pos;
+        currentTarget->setTelemetry({.position = pos, .speed = currentTtargetTelemetry.speed});
     }
 
     if (currentTargets.contains(index) && previousTargets.contains(index)) {
         auto dt = currentTargetsTimes.at(index) - previousTargetsTimes.at(index);
-        currentTargets.at(index).get()->velocity = {
-            .x = (currentTargets.at(index).get()->position.x - previousTargets.at(index).get()->position.x) / dt,
-            .y = (currentTargets.at(index).get()->position.y - previousTargets.at(index).get()->position.y) / dt};
+
+        auto currPos = currentTargets.at(index).get()->getTelemetry().position;
+        auto prevPos = previousTargets.at(index).get()->getTelemetry().position;
+
+        currentTargets.at(index).get()->setTelemetry(
+            {.position = currPos, .speed = {.x = (currPos.x - prevPos.x) / dt, .y = (currPos.y - prevPos.y) / dt}});
     }
 }

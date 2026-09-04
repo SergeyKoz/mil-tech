@@ -176,15 +176,15 @@ auto DroneAutopilot::updateControl(const dlink::Control &control) -> void
 auto DroneAutopilot::calculateSimulationStep() -> std::unique_ptr<SimStep>
 {
     auto speed = context->droneTelemetry.speed.toSpeed();
-    auto selectedTarget = targetSelector->selectTarget(context->droneTelemetry, *context->dropParams);
+    auto [index, targetTelemetry, timeToReachPosition] = targetSelector->selectTarget(context->droneTelemetry, *context->dropParams);
+    Coord targetPosition = targetTelemetry.position;
+    Speed targetSpeed = targetTelemetry.speed;
     auto dronePosition = context->droneTelemetry.position;
     auto droneDirection = context->droneTelemetry.direction;
-    auto targetPosition = selectedTarget.target->position;
-    auto targetSpeed = selectedTarget.target->velocity;
     auto targetDistance = context->droneTelemetry.position.distance(targetPosition);
     Coord predictedTarget = {
-        selectedTarget.position.x + targetSpeed.x * selectedTarget.timeToReachPosition,
-        selectedTarget.position.y + targetSpeed.y * selectedTarget.timeToReachPosition,
+        targetPosition.x + targetSpeed.x * timeToReachPosition,
+        targetPosition.y + targetSpeed.y * timeToReachPosition,
     };
 
     context->distanceToDropPoint = dronePosition.distance(predictedTarget) - dropParams.distance;
@@ -193,7 +193,7 @@ auto DroneAutopilot::calculateSimulationStep() -> std::unique_ptr<SimStep>
         SimStep({.pos = dronePosition,                    // позиція дрона
                  .direction = droneDirection,             // напрямок (рад)
                  .state = context->droneTelemetry.state,  // стан автомата(0 - 4)
-                 .targetIdx = selectedTarget.idx,         // індекс поточної цілі
+                 .targetIdx = index,                      // індекс поточної цілі
                  .dropPoint = dronePosition.move(targetDistance - dropParams.distance, droneDirection),  // точка скиду (куди летить дрон)
                  .aimPoint = dronePosition.move(dropParams.distance, droneDirection),  // куди впаде бомба (якщо скинути зараз)
                  .predictedTarget = predictedTarget,                                   // прогнозована позиція цілі
