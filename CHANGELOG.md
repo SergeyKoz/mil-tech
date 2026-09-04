@@ -3,6 +3,12 @@
 Усі помітні зміни в цьому репо фіксуються тут.
 Формат - [Keep a Changelog](https://keepachangelog.com/uk/1.1.0/), дати в ISO 8601.
 
+## 2026-07-18
+
+### Added
+
+- [Home work 13] ROS2 Antidrone turett 
+
 ## 2026-07-08
 
 ### Added
