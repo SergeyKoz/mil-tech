@@ -262,5 +262,22 @@
         "clear": true
       }
     },
+    {
+      "label": "CMake: configure and build i2c_app",
+      "type": "shell",
+      "command": "cmake --preset debug && cmake --build --preset debug --target i2c_app",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
   ]
 }

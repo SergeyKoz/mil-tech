@@ -47,3 +47,5 @@ ros-jazzy-rqt-graph
 # у devcontainer.
 ros-jazzy-rmw-cyclonedds-cpp
 libssl-dev
+
+i2c-tools

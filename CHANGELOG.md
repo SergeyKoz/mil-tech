@@ -3,6 +3,12 @@
 Усі помітні зміни в цьому репо фіксуються тут.
 Формат - [Keep a Changelog](https://keepachangelog.com/uk/1.1.0/), дати в ISO 8601.
 
+## 2026-08-13
+
+### Added
+
+- [Home work 16] Work with I2C device
+
 ## 2026-08-07
 
 ### Added
