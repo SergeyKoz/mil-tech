@@ -76,7 +76,7 @@ auto get_ammo_params(const char ammo_name[NAME_LENGTH]) -> AmmoParams
     throw std::runtime_error("Wrong ammo name");
 }
 
-auto calc_drop_parameters(const char ammo_name[NAME_LENGTH], float v0, float z0) -> DropParameters
+auto calc_ballistic_parameters(const char ammo_name[NAME_LENGTH], float v0, float z0) -> BallisticParameters
 {
     if (v0 <= 0 || z0 <= 0) {
         throw std::runtime_error("Initial velocity and initial height must be positive");
@@ -87,4 +87,20 @@ auto calc_drop_parameters(const char ammo_name[NAME_LENGTH], float v0, float z0)
     float distance = calc_drop_distance(time, ammo, v0);
 
     return {.time = time, .distance = distance};
+}
+
+auto calc_fire_parameters(BallisticParameters ballistic_params, Coord drone, Coord target, float accelerationPath) -> FireParameters
+{
+    auto distance = static_cast<float>(std::sqrt(std::pow((target.x - drone.x), 2) + std::pow((target.y - drone.y), 2)));
+    auto ratio = (distance - ballistic_params.distance) / distance;
+
+    Coord fire = {drone.x + (target.x - drone.x) * ratio, drone.y + (target.y - drone.y) * ratio};
+    Coord intermediate = {0.0F, 0.0F};
+
+    if (ballistic_params.distance + accelerationPath > distance) {
+        intermediate = {target.x - (target.x - drone.x) * (ballistic_params.distance + accelerationPath) / distance,
+                        target.y - (target.y - drone.y) * (ballistic_params.distance + accelerationPath) / distance};
+    }
+
+    return {distance, fire, intermediate};
 }

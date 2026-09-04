@@ -41,7 +41,7 @@ private:
         }
 
         std::cout << "[C2] [" << currentTime() << "] [" << level << "] " << message << "\n";
-        file << "[C2] [" << currentTime() << "] [" << level << "] " << message << "\n";
+        file << "[C2] " << message << "\n";
         file.flush();
     }
 
