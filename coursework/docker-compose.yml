@@ -1,0 +1,56 @@
+services:
+  ros2-dev:
+    build:
+      context: .                  # Шлях до папки з Dockerfile
+      dockerfile: Dockerfile      # Назва файлу (якщо він лежить в інший папці, наприклад .devcontainer/Dockerfile)
+      args:
+        CONTAINER_USER: ${USER:-pi}        
+        USER_UID: ${UID:-1000}
+        USER_GID: ${GID:-1000}
+        WORKSPACE_FOLDER: /home/${USER:-pi}/mil-tech
+        TARGETPLATFORM: linux/arm64
+    container_name: ros2_jazzy_rpi5
+    platform: linux/arm64
+    restart: unless-stopped
+    
+    # Використовуємо мережу хоста, щоб ROS 2 DDS ноди (ROS Topics/Nodes) 
+    # бачили інші пристрої в мережі та на самій Raspberry Pi
+    network_mode: host
+
+    # Надаємо привілейований доступ для роботи з GPIO, I2C, SPI, камери тощо
+    privileged: true
+
+    # Додаємо внутрішнього користувача до хостових груп gpio, dialout, video
+    group_add:
+      - "986"   # GID групи gpio з вашого `ls -la` (дає доступ до gpiochip*)
+      - "20"    # dialout (для /dev/ttyAMA*)
+      - "44"    # video (для камери)
+
+    environment:
+      - ROS_DOMAIN_ID=0
+      - DISPLAY=${DISPLAY:-:0}
+      - QT_X11_NO_MITSHM=1
+
+    volumes:
+      # Монтуємо робочу папку з хоста в контейнер
+      - .:/home/${USER:-pi}/mil-tech
+      
+      # Передаємо системний сокет X11 для виводу GUI (Rviz2, rqt, Gazebo)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      
+      # Монтуємо локальний час з RPi5
+      - /etc/localtime:/etc/localtime:ro
+
+      # - ~/.Xauthority:/home/${USER:-pi}/.Xauthority:rw
+
+    # Доступ до апаратних пристроїв (GPIO, USB-камери, UART)
+    # devices:
+    #   # - /dev:/dev
+    #   - /dev/ttyAMA2:/dev/ttyAMA2
+      # - /dev/dri:/dev/dri
+
+    # Інтерактивний режим для роботи через термінал
+    tty: true
+    stdin_open: true
+
+    command: /bin/bash
