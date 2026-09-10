@@ -11,8 +11,48 @@ def generate_launch_description():
     # ros2 launch ballistics_simulator system.launch.py scenario:=small_rooms.yaml
     scenario = LaunchConfiguration("scenario")
     move_commit_period_ms = LaunchConfiguration("move_commit_period_ms")
+
+    # MAVROS параметри
+    fcu_url = LaunchConfiguration("fcu_url")
+    gcs_url = LaunchConfiguration("gcs_url")
+    tgt_system = LaunchConfiguration("tgt_system")
+    tgt_component = LaunchConfiguration("tgt_component")
+    
+
+
     scenario_path = PathJoinSubstitution(
         [FindPackageShare("ballistics_simulator"), "config", scenario]
+    )
+
+    # Нода MAVROS
+    mavros_node = Node(
+        package="mavros",
+        executable="mavros_node",
+        name="mavros_qgc_node",
+        namespace="qgc",
+        output="screen",
+        parameters=[
+            {
+                "fcu_url": fcu_url,
+                "gcs_url": gcs_url,
+                "target_system_id": ParameterValue(tgt_system, value_type=int),
+                "target_component_id": ParameterValue(tgt_component, value_type=int),
+                "fcu_protocol": "v2.0",
+                # "plugin_allowlist": [
+                #     "sys_status",
+                #     "sys_time",
+                #     "command",
+                #     "local_position",
+                #     "global_position",
+                #     "imu",
+                #     "param",
+                #     "rc_io",
+                #     "setpoint_position",
+                #     "setpoint_velocity",
+                #     "manual_control"
+                # ],
+            }
+        ],
     )
 
     # world_node = Node(
@@ -43,6 +83,30 @@ def generate_launch_description():
                 default_value="50",
                 description="Delay before applying queued move commands",
             ),
+
+            DeclareLaunchArgument(
+                "fcu_url",
+                default_value="udp://:14540@",
+                description="FCU connection URL",
+            ),
+
+            # gcs_url: IP-адреса вашого ПК з QGroundControl та порт 14550 (за замовчуванням у QGC)
+            DeclareLaunchArgument(
+                "gcs_url",
+                default_value="udp://@192.168.1.103:14550",  # Вкажіть тут IP вашого комп'ютера з QGC
+                description="GCS connection URL (QGroundControl)",
+            ),
+            DeclareLaunchArgument(
+                "tgt_system",
+                default_value="1",
+                description="Target system ID",
+            ),
+            DeclareLaunchArgument(
+                "tgt_component",
+                default_value="1",
+                description="Target component ID",
+            ),
+
             # world_node,
             # Node(
             #     package="ballistics_simulator",
@@ -67,5 +131,6 @@ def generate_launch_description():
                 executable="checker_data_provider_node",
                 parameters=[],
             ),
+            mavros_node,
         ]
     )

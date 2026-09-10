@@ -11,6 +11,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
+find_package(PkgConfig REQUIRED)
+set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+pkg_check_modules(GPIOD REQUIRED libgpiod)
+
 # Власні msg/srv описують контракт між world node і керуючою системою.
 find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(
@@ -25,8 +29,10 @@ rosidl_generate_interfaces(
     "srv/PayloadTrigger.srv")
 
 ament_auto_add_library(underground_world_core src/scenario_loader.cpp src/world_model.cpp
-                       src/world_explorer.cpp src/checker_uart_listener.cpp)
-target_include_directories(underground_world_core PUBLIC include)
+                       src/world_explorer.cpp src/checker_uart_listener.cpp src/checker_gpio_controller.cpp)
+target_include_directories(underground_world_core PUBLIC include ${GPIOD_INCLUDE_DIRS})
+
+target_link_libraries(underground_world_core ${GPIOD_LIBRARIES})
 
 ament_auto_add_executable(underground_world_node src/underground_world_node.cpp)
 target_link_libraries(underground_world_node underground_world_core)

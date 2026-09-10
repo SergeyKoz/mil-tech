@@ -24,11 +24,31 @@ RUN apt-get update && apt-get install -y \
     sudo \
     curl \
     mc \
-    libgpiod-dev \
-    gpiod \
+    autoconf \
+    autoconf-archive \
+    libtool \
+    pkg-config \
+    # Пакети MAVROS для ROS 2 Jazzy
+    ros-jazzy-mavros \
+    ros-jazzy-mavros-extras \
+    geographiclib-tools \
+    # libgpiod-dev \
+    # gpiod \
     # ros-jazzy-rqt \
     # ros-jazzy-rqt-common-plugins \
     && rm -rf /var/lib/apt/lists/*
+
+RUN wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/install_geographiclib_datasets.sh -O /tmp/install_geographiclib_datasets.sh \
+    && bash /tmp/install_geographiclib_datasets.sh \
+    && rm -f /tmp/install_geographiclib_datasets.sh
+
+RUN git clone --branch v2.1 --depth 1 https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git /tmp/libgpiod \
+    && cd /tmp/libgpiod \
+    && ./autogen.sh --prefix=/usr --enable-tools \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && rm -rf /tmp/libgpiod
 
 # Якщо користувача pi немає, перейменовуємо стандартного ubuntu (UID 1000) на pi
 RUN if ! id -u ${CONTAINER_USER} >/dev/null 2>&1; then \

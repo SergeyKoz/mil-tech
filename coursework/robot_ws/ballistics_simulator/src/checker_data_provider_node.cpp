@@ -9,36 +9,36 @@
 #include "ballistics_simulator/state_qos.hpp"
 #include "ballistics_simulator/world_explorer.hpp"
 #include "ballistics_simulator/checker_uart_listener.hpp"
+#include "ballistics_simulator/checker_gpio_controller.hpp"
 #include "interfaces/uart_listener_interface.hpp"
 
-// /home/dev/mil-tech/coursework/robot_ws/ballistics_simulator/include/interfaces/uart_listener_interface.hpp
+namespace
+{
 
-namespace {
+    // constexpr auto kScanTopic = "/robot/local_scan";
+    // constexpr auto kMoveTopic = "/robot/cmd_move";
+    // constexpr auto kEnemyDownTopic = "/payload/enemy_down";
+    // constexpr auto kStatusTopic = "/student/status";
+    // constexpr auto kTriggerService = "/payload/trigger";
 
-// constexpr auto kScanTopic = "/robot/local_scan";
-// constexpr auto kMoveTopic = "/robot/cmd_move";
-// constexpr auto kEnemyDownTopic = "/payload/enemy_down";
-// constexpr auto kStatusTopic = "/student/status";
-// constexpr auto kTriggerService = "/payload/trigger";
+    // constexpr auto kScanTopic = "/checker/local_scan";
+    // "--uart",
+    // "/dev/ttyAMA2",
+    // "--gpiochip",
+    // "gpiochip0",
+    // "--start-line",
+    // "24",
+    // "--drop-line",
+    // "23"
+    // socat -d -d pty,raw,echo=0,link=/tmp/ttyA pty,raw,echo=0,link=/tmp/ttyB
 
-// constexpr auto kScanTopic = "/checker/local_scan";
-// "--uart",
-// "/dev/ttyAMA2",
-// "--gpiochip",
-// "gpiochip0",
-// "--start-line",
-// "24",
-// "--drop-line",
-// "23"
-// socat -d -d pty,raw,echo=0,link=/tmp/ttyA pty,raw,echo=0,link=/tmp/ttyB
+} // namespace
 
-}  // namespace
-
-class CheckerDataProviderNode final : public rclcpp::Node, public IUartListener {
-  public:
+class CheckerDataProviderNode final : public rclcpp::Node, public IUartListener
+{
+public:
     CheckerDataProviderNode()
-        : Node("checker_data_provider_node")
-        , uartListener(ballistics_simulator::CheckerUARTListener("/tmp/ttyA"))  /// dev/ttyAMA2
+        : Node("checker_data_provider_node"), uartListener(ballistics_simulator::CheckerUARTListener("/dev/ttyAMA2")), gpioController(ballistics_simulator::CheckerGPIOController("gpiochip0", 24, 23))
     {
         const auto qos = rclcpp::QoS{10};
 
@@ -47,6 +47,9 @@ class CheckerDataProviderNode final : public rclcpp::Node, public IUartListener 
         uartListener.init();
         uartListener.addListener(*this);
         uartListener.start();
+
+        gpioController.init();
+        gpioController.start();
     }
 
     auto updateTelemetry(const dlink::Telemetry &telemetry) -> void
@@ -291,7 +294,7 @@ class CheckerDataProviderNode final : public rclcpp::Node, public IUartListener 
 
     ~CheckerDataProviderNode() override { uartListener.stop(); }
 
-  private:
+private:
     // void on_local_scan(const ballistics_simulator::msg::LocalScan& localScan)
     // {
     // }
@@ -305,6 +308,7 @@ class CheckerDataProviderNode final : public rclcpp::Node, public IUartListener 
     // auto rpiCheckerUART = std::make_unique<RpiCheckerUART>(cliParams.uartPort);
 
     ballistics_simulator::CheckerUARTListener uartListener;
+    ballistics_simulator::CheckerGPIOController gpioController;
 
     // ballistics_simulator::WorldExplorer worldExplorer;
     // WorldExplorerState state = WorldExplorerState::EXPLORING;

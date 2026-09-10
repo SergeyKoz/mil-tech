@@ -14,9 +14,6 @@ CourseworkApp/launch: CourseworkApp/build
 	# ros2 launch ballistics_simulator system.launch.py scenario:=dead_end_bunker.yaml
 	# ros2 launch ballistics_simulator system.launch.py scenario:=small_rooms.yaml
 
-
-
-
 CourseworkApp/checker:
 	./checker/checker_pi_armv6 2 --hw --uart /dev/ttyAMA0 --gpiochip gpiochip0 --start-line 27 --drop-line 22
 
