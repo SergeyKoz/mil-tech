@@ -28,29 +28,43 @@ def generate_launch_description():
     mavros_node = Node(
         package="mavros",
         executable="mavros_node",
-        name="mavros_qgc_node",
-        namespace="qgc",
+        name="mavros_node", # _qgc_node
+        # namespace="qgc",
         output="screen",
         parameters=[
             {
                 "fcu_url": fcu_url,
                 "gcs_url": gcs_url,
-                "target_system_id": ParameterValue(tgt_system, value_type=int),
-                "target_component_id": ParameterValue(tgt_component, value_type=int),
+                "target_system_id": 1, # ParameterValue(tgt_system, value_type=int),
+                "target_component_id": 1, #  arameterValue(tgt_component, value_type=int),
                 "fcu_protocol": "v2.0",
-                # "plugin_allowlist": [
-                #     "sys_status",
-                #     "sys_time",
-                #     "command",
-                #     "local_position",
-                #     "global_position",
-                #     "imu",
-                #     "param",
-                #     "rc_io",
-                #     "setpoint_position",
-                #     "setpoint_velocity",
-                #     "manual_control"
-                # ],
+                "plugin_allowlist": [
+                    "sys_status",
+                    "sys_version",
+                    "sys_time",
+                    "command",
+                    "local_position",
+                    "global_position",
+                    "imu",
+                    "param",
+                    "rc_io",
+                    # "setpoint_position",
+                    # "setpoint_velocity",
+                    # "setpoint_raw",
+                    "mission",
+                    # "waypoint",
+                    "manual_control",
+                    # "state",
+                    "timesync"
+                ]
+                # "plugin_denylist": [
+                #     # "companion_process_status",
+                #     # "adsb",
+                #     # "camera",
+                #     # "cam_imu_sync",
+                #     # "cellular_status",
+                #     # "actuator_control"
+                # ]
             }
         ],
     )
@@ -86,7 +100,7 @@ def generate_launch_description():
 
             DeclareLaunchArgument(
                 "fcu_url",
-                default_value="udp://:14540@",
+                default_value="udp://:14551@",
                 description="FCU connection URL",
             ),
 

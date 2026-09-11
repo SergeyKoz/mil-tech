@@ -3,7 +3,7 @@
 # У Rover-4.6.x використовуються --serial0/--serial1; старий --uartA не потрiбен.
 #   SERIAL0 -> QGroundControl
 #   SERIAL1 -> c2_service
-exec /ardupilot/ardupilot/Tools/autotest/sim_vehicle.py \
+exec /home/ardupilot/ardupilot/Tools/autotest/sim_vehicle.py \
   --vehicle "${VEHICLE:-Copter}" \
   --no-rebuild \
   --no-mavproxy \

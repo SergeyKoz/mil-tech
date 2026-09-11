@@ -11,7 +11,8 @@ CourseworkApp/ardu-cli:
 
 CourseworkApp/build:
 	cd ./coursework/robot_ws && \
-	docker compose up -d --build ros2-dev
+	docker compose up -d --build ardupilot-sitl
+	# ros2-dev
 
 CourseworkApp/up:
 	cd ./coursework/robot_ws && \

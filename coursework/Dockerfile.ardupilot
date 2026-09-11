@@ -1,4 +1,3 @@
-# FROM ardupilot/ardupilot-dev-aarch64:latest
 FROM ubuntu:22.04
 
 ARG ARDUPILOT_TAG=Copter-4.7.1
@@ -61,4 +60,3 @@ RUN chmod +x /entrypoint.sh
 WORKDIR /home/ardupilot/ardupilot
 
 ENTRYPOINT ["/entrypoint.sh"]
-
