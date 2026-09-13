@@ -10,6 +10,7 @@
 #include "ballistics_simulator/msg/ammo_config.hpp"
 #include "ballistics_simulator/msg/telemetry.hpp"
 #include "ballistics_simulator/msg/target.hpp"
+#include "ballistics_simulator/msg/control_command.hpp"
 #include "ballistics_simulator/state_qos.hpp"
 #include "ballistics_simulator/world_explorer.hpp"
 #include "ballistics_simulator/checker_uart_listener.hpp"
@@ -22,6 +23,7 @@ namespace
     constexpr auto kAmmoConfigTopic = "/checker/ammo_config";
     constexpr auto kTelementyTopic = "/checker/telemetry";
     constexpr auto kTargetTopic = "/checker/target";
+    constexpr auto kControlCommandTopic = "/checker/control_command";
 
     // constexpr auto kScanTopic = "/robot/local_scan";
     // constexpr auto kMoveTopic = "/robot/cmd_move";
@@ -56,6 +58,11 @@ public:
         ammoConfigPublicher = create_publisher<ballistics_simulator::msg::AmmoConfig>(kAmmoConfigTopic, state_qos);
         telemetryPublicher = create_publisher<ballistics_simulator::msg::Telemetry>(kTelementyTopic, state_qos);
         targetPublicher = create_publisher<ballistics_simulator::msg::Target>(kTargetTopic, state_qos);
+
+        controlCommandSubscription = create_subscription<ballistics_simulator::msg::ControlCommand>(
+            kControlCommandTopic, state_qos, [this](const ballistics_simulator::msg::ControlCommand &command)
+            { on_control_command(command); });
+
         // gpioset gpiochip0 24=1 --mode=time --sec=10
         gpioController.init();
         uartListener.init();
@@ -240,6 +247,20 @@ public:
         // DEBUG("Control command: (accel:" << control.accel << " turnRate:" << control.turnRate << ")");
     }
 
+    void on_control_command(const ballistics_simulator::msg::ControlCommand &command)
+    {
+        //         struct Control {
+        //     float accel;     // прискорення вздовж курсу, [-1..1] (1 = повний газ, -1 = гальмо)
+        //     float turnRate;  // швидкість повороту, [-1..1] (1 = макс. вліво, -1 = вправо)
+        // };
+        dlink::Control control = {.accel = command.acceleration, .turnRate = command.turn_rate};
+        uartListener.writeControl(control);
+
+        // dynamic_cast<ballistics_simulator::CheckerUARTListener *>(uartListener)->writeCommand(control);
+        // auto writeControl(const dlink::Control &control) const -> void;
+        RCLCPP_INFO(this->get_logger(), "acceleration=%.2f turnRate=%.2f", command.acceleration, command.turn_rate);
+    }
+
     ~CheckerDataProviderNode() override { uartListener.stop(); }
 
 private:
@@ -261,6 +282,7 @@ private:
     rclcpp::Publisher<ballistics_simulator::msg::AmmoConfig>::SharedPtr ammoConfigPublicher;
     rclcpp::Publisher<ballistics_simulator::msg::Telemetry>::SharedPtr telemetryPublicher;
     rclcpp::Publisher<ballistics_simulator::msg::Target>::SharedPtr targetPublicher;
+    rclcpp::Subscription<ballistics_simulator::msg::ControlCommand>::SharedPtr controlCommandSubscription;
 
     // ballistics_simulator::WorldExplorer worldExplorer;
     // WorldExplorerState state = WorldExplorerState::EXPLORING;

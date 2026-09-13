@@ -31,8 +31,11 @@ namespace ballistics_simulator
   // struct DroneContext;
 
   class Autopilot : public ILoggable
-  { //: public IUartListener {
+  {
+
   public:
+    using ControlCommandHandler = std::function<void(const ControlCommand &)>;
+
     Autopilot(std::unique_ptr<IBallisticsSolver> solver, std::shared_ptr<ITargetsProvider> targetsProvider);
     // Autopilot(std::unique_ptr<IBallisticsSolver> solver,
     //           std::unique_ptr<IConfigLoader> configLoader,
@@ -46,6 +49,12 @@ namespace ballistics_simulator
     auto setConfig(const DroneConfig &config) -> void;
     auto setAmmo(const AmmoConfig &config) -> void;
     auto processTelemetry(DroneTelemetry &telemetry) -> void;
+
+    void setCommandHandler(ControlCommandHandler handler);
+    // {
+    //   controlCommandHandler = handler ? std::move(handler) : [](const ControlCommand &) {};
+    // }
+
     // auto setTarget(const DroneTelemetry &telemetry) -> void;
 
     // auto init() -> void;
@@ -78,10 +87,9 @@ namespace ballistics_simulator
     bool isTargetsDefined{false};
     bool isDropParametersCalculated{false};
 
-    // int uart;
-
     std::unique_ptr<DroneContext> context;
     std::map<DroneStatus, std::function<std::unique_ptr<IDroneState>()>> states;
+    ControlCommandHandler controlCommandHandler = [](const ControlCommand &) {};
 
     auto calculateSimulationStep() -> std::unique_ptr<SimStep>;
     static auto isDroneConfigReady(const DroneConfig &droneConfig) -> bool;

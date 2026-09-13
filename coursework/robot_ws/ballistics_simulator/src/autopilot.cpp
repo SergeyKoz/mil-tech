@@ -205,8 +205,16 @@ namespace ballistics_simulator
             float accelPosition = command.state == ACCELERATING ? 1.0F : -1.0F;
             float accel = command.state != ACCELERATING && command.state != DECELERATING ? 0.F : accelPosition;
 
+            ControlCommand controlCommand = {.acceleration = accel, .turnRate = turnRate};
+            controlCommandHandler(controlCommand);
+
             //     rpiCheckerUART->writeControl({.accel = accel, .turnRate = turnRate});
         }
+    }
+
+    void Autopilot::setCommandHandler(ControlCommandHandler handler)
+    {
+        controlCommandHandler = handler ? std::move(handler) : [](const ControlCommand &) {};
     }
 
     // DroneAutopilot::DroneAutopilot(std::unique_ptr<IBallisticsSolver> solver,

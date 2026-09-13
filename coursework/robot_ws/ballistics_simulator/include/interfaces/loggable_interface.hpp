@@ -45,10 +45,6 @@ protected:
     return LogStream(logFn);
   }
 
-  // void log(const std::string &msg) const
-  // {
-  //   logFn(msg);
-  // }
 private:
   LogFn logFn = [](const std::string &) {};
 };

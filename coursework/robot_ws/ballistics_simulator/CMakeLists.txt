@@ -29,7 +29,8 @@ rosidl_generate_interfaces(
     "msg/DroneConfig.msg"
     "msg/AmmoConfig.msg"
     "msg/Telemetry.msg"
-    "msg/Target.msg" 
+    "msg/Target.msg"
+    "msg/ControlCommand.msg"
     "srv/PayloadTrigger.srv")
 
 ament_auto_add_library(underground_world_core src/scenario_loader.cpp src/world_model.cpp

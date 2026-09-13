@@ -4,6 +4,7 @@
 #include "ballistics_simulator/msg/ammo_config.hpp"
 #include "ballistics_simulator/msg/telemetry.hpp"
 #include "ballistics_simulator/msg/target.hpp"
+#include "ballistics_simulator/msg/control_command.hpp"
 #include "ballistics_simulator/state_qos.hpp"
 #include "ballistics_simulator/autopilot.hpp"
 #include "ballistics_simulator/solvers/table_solver.hpp"
@@ -16,6 +17,7 @@ namespace
     constexpr auto kAmmoConfigTopic = "/checker/ammo_config";
     constexpr auto kTelemetryTopic = "/checker/telemetry";
     constexpr auto kTargetTopic = "/checker/target";
+    constexpr auto kControlCommandTopic = "/checker/control_command";
 } // namespace
 
 class AutopilotNode final : public rclcpp::Node
@@ -32,6 +34,9 @@ public:
         autopilot.setLogger([this](const std::string &msg)
                             { RCLCPP_INFO(this->get_logger(), "%s", msg.c_str()); });
 
+        autopilot.setCommandHandler([this](const ballistics_simulator::ControlCommand &command)
+                                    { on_control_command(command); });
+
         targetsProvider->setLogger([this](const std::string &msg)
                                    { RCLCPP_INFO(this->get_logger(), "%s", msg.c_str()); });
 
@@ -47,6 +52,8 @@ public:
         targetSubscription = create_subscription<ballistics_simulator::msg::Target>(
             kTargetTopic, state_qos, [this](const ballistics_simulator::msg::Target &target)
             { on_target(target); });
+
+        controlCommandPublicher = create_publisher<ballistics_simulator::msg::ControlCommand>(kControlCommandTopic, state_qos);
     }
 
 private:
@@ -135,10 +142,19 @@ private:
         targetsProvider->setTarget(target.id, {target.x, target.y}, autopilot.getCurrentTime());
     }
 
+    void on_control_command(const ballistics_simulator::ControlCommand &command)
+    {
+        ballistics_simulator::msg::ControlCommand msg;
+        msg.acceleration = command.acceleration;
+        msg.turn_rate = command.turnRate;
+        controlCommandPublicher->publish(msg);
+    }
+
     rclcpp::Subscription<ballistics_simulator::msg::DroneConfig>::SharedPtr droneConfigSubscription;
     rclcpp::Subscription<ballistics_simulator::msg::AmmoConfig>::SharedPtr ammoConfigSubscription;
     rclcpp::Subscription<ballistics_simulator::msg::Telemetry>::SharedPtr telemetrySubscription;
     rclcpp::Subscription<ballistics_simulator::msg::Target>::SharedPtr targetSubscription;
+    rclcpp::Publisher<ballistics_simulator::msg::ControlCommand>::SharedPtr controlCommandPublicher;
 
     std::shared_ptr<ballistics_simulator::TargetsProvider> targetsProvider;
     ballistics_simulator::Autopilot autopilot;

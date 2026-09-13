@@ -219,6 +219,12 @@ namespace ballistics_simulator
         float maxSpeed;
     };
 
+    struct ControlCommand
+    {
+        float acceleration; // прискорення вздовж курсу, [-1..1] (1 = повний газ, -1 = гальмо)
+        float turnRate;     // швидкість повороту, [-1..1] (1 = макс. вліво, -1 = вправо)
+    };
+
     // enum TestCode
     // {
     //     T1 = 1,
