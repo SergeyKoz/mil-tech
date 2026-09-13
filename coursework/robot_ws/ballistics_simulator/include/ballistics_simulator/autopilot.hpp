@@ -12,7 +12,7 @@
 // struct gpiod_line_request;
 class IBallisticsSolver;
 // class IConfigLoader;
-// class ITargetsProvider;
+class ITargetsProvider;
 // class IDroneState;
 // class RpiConfigLoader;
 // class TargetSelector;
@@ -27,12 +27,13 @@ namespace ballistics_simulator
 {
 
   struct DroneConfig;
+
   // struct DroneContext;
 
   class Autopilot : public ILoggable
   { //: public IUartListener {
   public:
-    Autopilot(std::unique_ptr<IBallisticsSolver> solver);
+    Autopilot(std::unique_ptr<IBallisticsSolver> solver, std::shared_ptr<ITargetsProvider> targetsProvider);
     // Autopilot(std::unique_ptr<IBallisticsSolver> solver,
     //           std::unique_ptr<IConfigLoader> configLoader,
     //           std::unique_ptr<ITargetsProvider> targetProvider,
@@ -40,9 +41,12 @@ namespace ballistics_simulator
     //           std::unique_ptr<RpiCheckerUART> rpiCheckerUART);
     // Autopilot();
 
+    auto getCurrentTime() -> float;
+
     auto setConfig(const DroneConfig &config) -> void;
     auto setAmmo(const AmmoConfig &config) -> void;
     auto processTelemetry(const DroneTelemetry &telemetry) -> void;
+    // auto setTarget(const DroneTelemetry &telemetry) -> void;
 
     // auto init() -> void;
     // auto start() -> void;
@@ -61,7 +65,7 @@ namespace ballistics_simulator
   private:
     std::unique_ptr<IBallisticsSolver> solver;
     // std::unique_ptr<IConfigLoader> configLoader;
-    // std::unique_ptr<ITargetsProvider> targetProvider;
+    std::shared_ptr<ITargetsProvider> targetsProvider;
     // std::unique_ptr<TargetSelector> targetSelector;
     // std::unique_ptr<RpiCheckerGPIO> rpiCheckerGPIO;
     // std::unique_ptr<RpiCheckerUART> rpiCheckerUART;

@@ -24,6 +24,10 @@ def generate_launch_description():
         [FindPackageShare("ballistics_simulator"), "config", scenario]
     )
 
+    ballistic_table_path = PathJoinSubstitution(
+        [FindPackageShare("ballistics_simulator"), "config", "ballistic_table.txt"]
+    )
+
     # Нода MAVROS
     mavros_node = Node(
         package="mavros",
@@ -148,7 +152,11 @@ def generate_launch_description():
             Node(
                 package="ballistics_simulator",
                 executable="autopilot_node",
-                parameters=[],
+                parameters=[
+                    {
+                        "ballistic_table_path": ballistic_table_path,
+                    }
+                ],
             ),
             # mavros_node,
         ]

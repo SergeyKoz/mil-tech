@@ -153,7 +153,7 @@ namespace ballistics_simulator
         {
             f >> v;
         }
-
+ 
         size_t total = (size_t)nZ * nV * nM * nD * nL;
         data.resize(total);
 

@@ -1,5 +1,6 @@
 #include "ballistics_simulator/autopilot.hpp"
 #include "interfaces/ballistics_solver_interface.hpp"
+#include "interfaces/targets_provider_interface.hpp"
 
 // #include "DroneAutopilot.hpp"
 // #include "interfaces/IConfigLoader.hpp"
@@ -23,7 +24,13 @@
 
 namespace ballistics_simulator
 {
-    Autopilot::Autopilot(std::unique_ptr<IBallisticsSolver> solver) : solver(std::move(solver)) {};
+    Autopilot::Autopilot(std::unique_ptr<IBallisticsSolver> solver, std::shared_ptr<ITargetsProvider> targetsProvider)
+        : solver(std::move(solver)), targetsProvider(targetsProvider) {};
+
+    auto Autopilot::getCurrentTime() -> float
+    {
+        return currentTime;
+    };
 
     auto Autopilot::setConfig(const DroneConfig &config) -> void
     {
@@ -68,7 +75,7 @@ namespace ballistics_simulator
     {
         // log() << "processTelemetry " << 10 << " start";
 
-        // currentTime = static_cast<float>(telemetry.t_ms) / 1000.0F;  // мілісекунди -> секунди
+        currentTime = droneTelemetry.timeSinceStart;
 
         if (!isConfigured)
         {
@@ -82,24 +89,28 @@ namespace ballistics_simulator
             isConfigured = isDroneConfigReady(droneConfig);
 
             log() << "droneConfig.altitude " << droneConfig.altitude << " droneConfig.ammo.name " << droneConfig.ammo.name;
-
             log() << "isConfigured " << isConfigured;
 
             if (!isConfigured)
             {
                 return;
             }
+
+            solver->init();
         }
 
         if (!isTargetsDefined)
         {
+            isTargetsDefined = targetsProvider->isReady();
+
             //     isTargetsDefined = dynamic_cast<CheckerTargetProvider *>(targetProvider.get())->isReady();
 
-            //     if (!isTargetsDefined) {
-            //         return;
-            //     }
+            if (!isTargetsDefined)
+            {
+                return;
+            }
 
-            isTargetsDefined = true;
+            log() << "isTargetsDefined yes";
         }
 
         if (isConfigured && isTargetsDefined && !isDropParametersCalculated)
@@ -162,9 +173,6 @@ namespace ballistics_simulator
             //     rpiCheckerUART->writeControl({.accel = accel, .turnRate = turnRate});
         }
     }
-
-    // Autopilot::Autopilot(std::unique_ptr<IBallisticsSolver> solver)
-    //     : solver(std::move(solver)) {};
 
     // DroneAutopilot::DroneAutopilot(std::unique_ptr<IBallisticsSolver> solver,
     //                                std::unique_ptr<IConfigLoader> configLoader,

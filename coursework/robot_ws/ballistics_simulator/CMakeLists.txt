@@ -28,12 +28,14 @@ rosidl_generate_interfaces(
     "msg/StudentStatus.msg"
     "msg/DroneConfig.msg"
     "msg/AmmoConfig.msg"
-    "msg/Telemetry.msg" 
+    "msg/Telemetry.msg"
+    "msg/Target.msg" 
     "srv/PayloadTrigger.srv")
 
 ament_auto_add_library(underground_world_core src/scenario_loader.cpp src/world_model.cpp
                        src/world_explorer.cpp src/checker_uart_listener.cpp src/checker_gpio_controller.cpp src/autopilot.cpp
-                       src/solvers/table_solver.cpp src/solvers/ballistic_table.cpp)
+                       src/solvers/table_solver.cpp src/solvers/ballistic_table.cpp src/providers/targets_provider.cpp
+                       src/target_selector.cpp)
 target_include_directories(underground_world_core PUBLIC include ${GPIOD_INCLUDE_DIRS})
 
 target_link_libraries(underground_world_core ${GPIOD_LIBRARIES})

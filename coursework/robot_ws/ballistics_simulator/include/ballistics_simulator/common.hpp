@@ -113,7 +113,7 @@ namespace ballistics_simulator
         float drag;
         float lift;
         float hitRadius;
-        int targetCount;
+        // int targetCount;
     };
 
     struct AmmoParams

@@ -3,40 +3,53 @@
 #include "ballistics_simulator/msg/drone_config.hpp"
 #include "ballistics_simulator/msg/ammo_config.hpp"
 #include "ballistics_simulator/msg/telemetry.hpp"
+#include "ballistics_simulator/msg/target.hpp"
 #include "ballistics_simulator/state_qos.hpp"
 #include "ballistics_simulator/autopilot.hpp"
 #include "ballistics_simulator/solvers/table_solver.hpp"
+#include "ballistics_simulator/providers/targets_provider.hpp"
 #include "ballistics_simulator/common.hpp"
+// #include <ament_index_cpp/get_package_share_directory.hpp>
 
 namespace
 {
-    constexpr auto kDroneConfigTopic = "/robot/drone_config";
-    constexpr auto kAmmoConfigTopic = "/robot/ammo_config";
-    constexpr auto kTelemetryTopic = "/robot/telemetry";
+    constexpr auto kDroneConfigTopic = "/checker/drone_config";
+    constexpr auto kAmmoConfigTopic = "/checker/ammo_config";
+    constexpr auto kTelemetryTopic = "/checker/telemetry";
+    constexpr auto kTargetTopic = "/checker/target";
 } // namespace
 
 class AutopilotNode final : public rclcpp::Node
 {
 public:
     AutopilotNode()
-        : Node("autopilot_node"), autopilot(std::make_unique<ballistics_simulator::TableSolver>("/coursework/robot_ws/ballistics_simulator/config/ballistic_table.txt"))
+        // : Node("autopilot_node")
+        : Node("autopilot_node"), targetsProvider(std::make_shared<ballistics_simulator::TargetsProvider>()), autopilot(std::make_unique<ballistics_simulator::TableSolver>(declare_parameter<std::string>("ballistic_table_path", "")), targetsProvider)
     {
         const auto qos = rclcpp::QoS{10};
 
         const auto state_qos = ballistics_simulator::make_state_qos();
 
+        // auto testFilesRepository = std::make_shared<TestFilesRepository>(appConfig.testsRepositoryConfig.path);
+
         autopilot.setLogger([this](const std::string &msg)
                             { RCLCPP_INFO(this->get_logger(), "%s", msg.c_str()); });
 
+        targetsProvider->setLogger([this](const std::string &msg)
+                                   { RCLCPP_INFO(this->get_logger(), "%s", msg.c_str()); });
+
         droneConfigSubscription = create_subscription<ballistics_simulator::msg::DroneConfig>(
-            kDroneConfigTopic, qos, [this](const ballistics_simulator::msg::DroneConfig &droneConfig)
+            kDroneConfigTopic, state_qos, [this](const ballistics_simulator::msg::DroneConfig &droneConfig)
             { on_drone_config(droneConfig); });
         ammoConfigSubscription = create_subscription<ballistics_simulator::msg::AmmoConfig>(
-            kAmmoConfigTopic, qos, [this](const ballistics_simulator::msg::AmmoConfig &ammoConfig)
+            kAmmoConfigTopic, state_qos, [this](const ballistics_simulator::msg::AmmoConfig &ammoConfig)
             { on_ammo_config(ammoConfig); });
         telemetrySubscription = create_subscription<ballistics_simulator::msg::Telemetry>(
-            kTelemetryTopic, qos, [this](const ballistics_simulator::msg::Telemetry &telemetry)
+            kTelemetryTopic, state_qos, [this](const ballistics_simulator::msg::Telemetry &telemetry)
             { on_telemetry(telemetry); });
+        targetSubscription = create_subscription<ballistics_simulator::msg::Target>(
+            kTargetTopic, state_qos, [this](const ballistics_simulator::msg::Target &target)
+            { on_target(target); });
     }
 
 private:
@@ -79,13 +92,15 @@ private:
                     ammoConfig.hit_radius,
                     ammoConfig.targets);
 
+        targetsProvider->setTargetsCount(ammoConfig.targets);
+
         autopilot.setAmmo({
             .name = ammoConfig.name,
             .mass = ammoConfig.mass,
             .drag = ammoConfig.drag,
             .lift = ammoConfig.lift,
             .hitRadius = ammoConfig.hit_radius,
-            .targetCount = ammoConfig.targets,
+            // .targetCount = ammoConfig.targets,
         });
     }
 
@@ -111,11 +126,33 @@ private:
                     telemetry.state);
     }
 
+    void on_target(const ballistics_simulator::msg::Target &target)
+    {
+        // autopilot({.state = ballistics_simulator::STOPPED,
+        //                             .position = {telemetry.x, telemetry.y},
+        //                             .altitude = telemetry.z,
+        //                             .speed = {telemetry.vx, telemetry.vy},
+        //                             .direction = telemetry.dir,
+        //                             .timeSinceStart = static_cast<float>(telemetry.t_ms) / 1000.0F});
+
+        RCLCPP_INFO(get_logger(),
+                    "on target id=%d x,y=%.2f,%.2f",
+                    target.id,
+                    target.x,
+                    target.y);
+
+        targetsProvider->setTarget(target.id, {target.x, target.y}, autopilot.getCurrentTime());
+    }
+
     rclcpp::Subscription<ballistics_simulator::msg::DroneConfig>::SharedPtr droneConfigSubscription;
     rclcpp::Subscription<ballistics_simulator::msg::AmmoConfig>::SharedPtr ammoConfigSubscription;
     rclcpp::Subscription<ballistics_simulator::msg::Telemetry>::SharedPtr telemetrySubscription;
+    rclcpp::Subscription<ballistics_simulator::msg::Target>::SharedPtr targetSubscription;
 
+    std::shared_ptr<ballistics_simulator::TargetsProvider> targetsProvider;
     ballistics_simulator::Autopilot autopilot;
+
+    // std::shared_ptr<TestFilesRepository> &testFilesRepository
 };
 
 int main(int argc, char **argv)
