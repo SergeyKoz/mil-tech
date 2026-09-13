@@ -10,8 +10,8 @@
 namespace ballistics_simulator
 {
 
-    TargetSelector::TargetSelector(ITargetsProvider &targetProvider)
-        : droneConfig(nullptr), targetProvider(&targetProvider), acceleration(0.F), fullAccelerationTime(0.F)
+    TargetSelector::TargetSelector(std::shared_ptr<ITargetsProvider> targetsProvider)
+        : droneConfig(nullptr), targetsProvider(targetsProvider), acceleration(0.F), fullAccelerationTime(0.F)
     {
     }
 
@@ -29,21 +29,23 @@ namespace ballistics_simulator
         TargetSnapshot selectedTarget = {-1, {}};
 
         std::vector<TargetSnapshot> targets;
-        const int targetsCount = targetProvider->getTargetsCount();
+        const int targetsCount = targetsProvider->getTargetsCount();
         targets.reserve(targetsCount);
 
         {
             std::lock_guard<std::mutex> lock(dataMutex);
             for (int targetIndex = 0; targetIndex < targetsCount; targetIndex++)
             {
-                auto *target = targetProvider->getTarget(targetIndex);
+                auto targetTelemetry = targetsProvider->getTarget(targetIndex);
 
-                if (target == nullptr)
-                {
-                    continue;
-                }
+                targets.push_back(TargetSnapshot{.index = targetIndex, .telemetry = targetTelemetry});
 
-                targets.push_back(TargetSnapshot{.index = targetIndex, .telemetry = target->getTelemetry()});
+                // if (target == nullptr)
+                // {
+                //     continue;
+                // }
+
+                // targets.push_back(TargetSnapshot{.index = targetIndex, .telemetry = target->getTelemetry()});
             }
         }
 

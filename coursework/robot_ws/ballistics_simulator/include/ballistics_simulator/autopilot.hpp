@@ -3,7 +3,7 @@
 #include <memory>
 // #include <functional>
 // #include <map>
-// #include <stdexcept>
+#include <stdexcept>
 // #include "interfaces/IUartListener.hpp"
 #include "common.hpp"
 #include "interfaces/loggable_interface.hpp"
@@ -19,15 +19,15 @@ class ITargetsProvider;
 // class RpiCheckerGPIO;
 // class RpiCheckerUART;
 
-// class TargetHit : public std::runtime_error
-// {
-//   using std::runtime_error::runtime_error;
-// };
 namespace ballistics_simulator
 {
+  class TargetHit : public std::runtime_error
+  {
+    using std::runtime_error::runtime_error;
+  };
 
   struct DroneConfig;
-
+  class TargetSelector;
   // struct DroneContext;
 
   class Autopilot : public ILoggable
@@ -45,7 +45,7 @@ namespace ballistics_simulator
 
     auto setConfig(const DroneConfig &config) -> void;
     auto setAmmo(const AmmoConfig &config) -> void;
-    auto processTelemetry(const DroneTelemetry &telemetry) -> void;
+    auto processTelemetry(DroneTelemetry &telemetry) -> void;
     // auto setTarget(const DroneTelemetry &telemetry) -> void;
 
     // auto init() -> void;
@@ -66,7 +66,7 @@ namespace ballistics_simulator
     std::unique_ptr<IBallisticsSolver> solver;
     // std::unique_ptr<IConfigLoader> configLoader;
     std::shared_ptr<ITargetsProvider> targetsProvider;
-    // std::unique_ptr<TargetSelector> targetSelector;
+    std::unique_ptr<TargetSelector> targetSelector;
     // std::unique_ptr<RpiCheckerGPIO> rpiCheckerGPIO;
     // std::unique_ptr<RpiCheckerUART> rpiCheckerUART;
 
@@ -83,7 +83,7 @@ namespace ballistics_simulator
     std::unique_ptr<DroneContext> context;
     // std::map<DroneStatus, std::function<std::unique_ptr<IDroneState>(TargetSelector &)>> states;
 
-    // auto calculateSimulationStep() -> std::unique_ptr<SimStep>;
+    auto calculateSimulationStep() -> std::unique_ptr<SimStep>;
     static auto isDroneConfigReady(const DroneConfig &droneConfig) -> bool;
     static auto isTargetHit(const DroneContext &droneContext) -> bool;
   };

@@ -106,12 +106,13 @@ private:
 
     void on_telemetry(const ballistics_simulator::msg::Telemetry &telemetry)
     {
-        autopilot.processTelemetry({.state = ballistics_simulator::STOPPED,
-                                    .position = {telemetry.x, telemetry.y},
-                                    .altitude = telemetry.z,
-                                    .speed = {telemetry.vx, telemetry.vy},
-                                    .direction = telemetry.dir,
-                                    .timeSinceStart = static_cast<float>(telemetry.t_ms) / 1000.0F});
+        ballistics_simulator::DroneTelemetry droneTelemetry = {.state = ballistics_simulator::STOPPED,
+                                                               .position = {telemetry.x, telemetry.y},
+                                                               .altitude = telemetry.z,
+                                                               .speed = {telemetry.vx, telemetry.vy},
+                                                               .direction = telemetry.dir,
+                                                               .timeSinceStart = static_cast<float>(telemetry.t_ms) / 1000.0F};
+        autopilot.processTelemetry(droneTelemetry);
 
         RCLCPP_INFO(get_logger(),
                     "on telemetry t=%d x,y,z=%.2f,%.2f,%.2f vx,vy,speed=%.2f,%.2f,%.2f dir=%.2f state=%d",

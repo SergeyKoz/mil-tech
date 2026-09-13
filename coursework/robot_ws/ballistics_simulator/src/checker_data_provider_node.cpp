@@ -208,7 +208,7 @@ public:
         //     float x, y;  // поточна позиція цілі, метри
         // };
 
-        RCLCPP_INFO(get_logger(), "target id=%d x,y=%.2f,%.2f", targetPosition.id, targetPosition.x, targetPosition.y);
+        // RCLCPP_INFO(get_logger(), "target id=%d x,y=%.2f,%.2f", targetPosition.id, targetPosition.x, targetPosition.y);
 
         ballistics_simulator::msg::Target msg;
         msg.id = targetPosition.id;

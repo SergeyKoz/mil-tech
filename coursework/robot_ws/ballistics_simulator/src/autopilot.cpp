@@ -1,6 +1,7 @@
 #include "ballistics_simulator/autopilot.hpp"
 #include "interfaces/ballistics_solver_interface.hpp"
 #include "interfaces/targets_provider_interface.hpp"
+#include "ballistics_simulator/target_selector.hpp"
 
 // #include "DroneAutopilot.hpp"
 // #include "interfaces/IConfigLoader.hpp"
@@ -25,7 +26,7 @@
 namespace ballistics_simulator
 {
     Autopilot::Autopilot(std::unique_ptr<IBallisticsSolver> solver, std::shared_ptr<ITargetsProvider> targetsProvider)
-        : solver(std::move(solver)), targetsProvider(targetsProvider) {};
+        : solver(std::move(solver)), targetsProvider(targetsProvider), targetSelector(std::make_unique<TargetSelector>(targetsProvider)) {};
 
     auto Autopilot::getCurrentTime() -> float
     {
@@ -71,7 +72,7 @@ namespace ballistics_simulator
         return std::abs(droneConfig.altitude) > epsilon && !droneConfig.ammo.name.empty() && std::abs(droneConfig.attackSpeed) > epsilon;
     }
 
-    auto Autopilot::processTelemetry(const DroneTelemetry &droneTelemetry) -> void
+    auto Autopilot::processTelemetry(DroneTelemetry &droneTelemetry) -> void
     {
         // log() << "processTelemetry " << 10 << " start";
 
@@ -122,7 +123,21 @@ namespace ballistics_simulator
 
             //     DEBUG("Drop parameters calculated: time=" << dropParams.time << ", distance=" << dropParams.distance);
 
-            //     targetSelector->init(droneConfig);
+            targetSelector->init(droneConfig);
+
+            droneTelemetry.state = STOPPED;
+
+            context = std::make_unique<DroneContext>(
+                DroneContext{.currentTime = 0.F,
+                             .simulationStep = {},
+                             .droneConfig = &droneConfig,
+                             .droneTelemetry = droneTelemetry,
+                             .dropParams = &dropParams,
+                             .selectedTarget = {},
+                             .turnAngle = 0.F,
+                             .acceleration = droneConfig.acceleration(),
+                             .angleStep = droneConfig.angularSpeed,
+                             .distanceToDropPoint = 0.F});
 
             //     context = std::make_unique<DroneContext>(
             //         DroneContext{.currentTime = 0.F,
@@ -141,23 +156,28 @@ namespace ballistics_simulator
             //                      .acceleration = droneConfig.acceleration(),
             //                      .angleStep = droneConfig.angularSpeed,
             //                      .distanceToDropPoint = 0.F});
-            // }
+        }
 
-            // if (isConfigured && isTargetsDefined && isDropParametersCalculated) {
-            //     context->droneTelemetry = DroneTelemetry{.state = context->droneTelemetry.state,
-            //                                              .position = {telemetry.x, telemetry.y},
-            //                                              .altitude = droneConfig.altitude,
-            //                                              .speed = {telemetry.vx, telemetry.vy},
-            //                                              .direction = telemetry.dir,
-            //                                              .timeSinceStart = static_cast<float>(telemetry.t_ms) / 1000.0F};
+        if (isConfigured && isTargetsDefined && isDropParametersCalculated)
+        {
+            droneTelemetry.state = context->droneTelemetry.state;
+            context->droneTelemetry = droneTelemetry;
 
-            //     auto simulationStep = calculateSimulationStep();
+            // context->droneTelemetry = DroneTelemetry{.state = context->droneTelemetry.state,
+            //                                          .position = {telemetry.x, telemetry.y},
+            //                                          .altitude = droneConfig.altitude,
+            //                                          .speed = {telemetry.vx, telemetry.vy},
+            //                                          .direction = telemetry.dir,
+            //                                          .timeSinceStart = static_cast<float>(telemetry.t_ms) / 1000.0F};
 
-            //     context->simulationStep = simulationStep.get();
+            auto simulationStep = calculateSimulationStep();
 
-            //     if (isTargetHit(*context)) {
-            //         throw TargetHit(std::to_string(context->simulationStep->targetIdx));
-            //     }
+            context->simulationStep = simulationStep.get();
+
+            if (isTargetHit(*context))
+            {
+                throw TargetHit(std::to_string(context->simulationStep->targetIdx));
+            }
 
             //     auto command = states[context->droneTelemetry.state](*targetSelector)->threadExecute(*context);
             //     context->droneTelemetry.state = command.state;
@@ -332,33 +352,33 @@ namespace ballistics_simulator
     //     DEBUG("Control command: (accel:" << control.accel << " turnRate:" << control.turnRate << ")");
     // }
 
-    // auto DroneAutopilot::calculateSimulationStep() -> std::unique_ptr<SimStep>
-    // {
-    //     auto speed = context->droneTelemetry.speed.toSpeed();
-    //     auto [index, targetTelemetry, timeToReachPosition] = targetSelector->selectTarget(context->droneTelemetry, *context->dropParams);
-    //     Coord targetPosition = targetTelemetry.position;
-    //     Speed targetSpeed = targetTelemetry.speed;
-    //     auto dronePosition = context->droneTelemetry.position;
-    //     auto droneDirection = context->droneTelemetry.direction;
-    //     auto targetDistance = context->droneTelemetry.position.distance(targetPosition);
-    //     Coord predictedTarget = {
-    //         targetPosition.x + targetSpeed.x * timeToReachPosition,
-    //         targetPosition.y + targetSpeed.y * timeToReachPosition,
-    //     };
+    auto Autopilot::calculateSimulationStep() -> std::unique_ptr<SimStep>
+    {
+        auto speed = context->droneTelemetry.speed.toSpeed();
+        auto [index, targetTelemetry, timeToReachPosition] = targetSelector->selectTarget(context->droneTelemetry, *context->dropParams);
+        Coord targetPosition = targetTelemetry.position;
+        Speed targetSpeed = targetTelemetry.speed;
+        auto dronePosition = context->droneTelemetry.position;
+        auto droneDirection = context->droneTelemetry.direction;
+        auto targetDistance = context->droneTelemetry.position.distance(targetPosition);
+        Coord predictedTarget = {
+            targetPosition.x + targetSpeed.x * timeToReachPosition,
+            targetPosition.y + targetSpeed.y * timeToReachPosition,
+        };
 
-    //     context->distanceToDropPoint = dronePosition.distance(predictedTarget) - dropParams.distance;
+        context->distanceToDropPoint = dronePosition.distance(predictedTarget) - dropParams.distance;
 
-    //     return std::make_unique<SimStep>(
-    //         SimStep({.pos = dronePosition,                    // позиція дрона
-    //                  .direction = droneDirection,             // напрямок (рад)
-    //                  .state = context->droneTelemetry.state,  // стан автомата(0 - 4)
-    //                  .targetIdx = index,                      // індекс поточної цілі
-    //                  .dropPoint = dronePosition.move(targetDistance - dropParams.distance, droneDirection),  // точка скиду (куди летить дрон)
-    //                  .aimPoint = dronePosition.move(dropParams.distance, droneDirection),  // куди впаде бомба (якщо скинути зараз)
-    //                  .predictedTarget = predictedTarget,                                   // прогнозована позиція цілі
-    //                  .speed = speed,
-    //                  .timeSecSinceStart = context->droneTelemetry.timeSinceStart}));
-    // }
+        return std::make_unique<SimStep>(
+            SimStep({.pos = dronePosition,                                                                  // позиція дрона
+                     .direction = droneDirection,                                                           // напрямок (рад)
+                     .state = context->droneTelemetry.state,                                                // стан автомата(0 - 4)
+                     .targetIdx = index,                                                                    // індекс поточної цілі
+                     .dropPoint = dronePosition.move(targetDistance - dropParams.distance, droneDirection), // точка скиду (куди летить дрон)
+                     .aimPoint = dronePosition.move(dropParams.distance, droneDirection),                   // куди впаде бомба (якщо скинути зараз)
+                     .predictedTarget = predictedTarget,                                                    // прогнозована позиція цілі
+                     .speed = speed,
+                     .timeSecSinceStart = context->droneTelemetry.timeSinceStart}));
+    }
 
     auto Autopilot::isTargetHit(const DroneContext &droneContext) -> bool
     {

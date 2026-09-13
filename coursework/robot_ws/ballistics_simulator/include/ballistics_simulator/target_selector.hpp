@@ -3,6 +3,7 @@
 // #include "MissionProcessor.hpp"
 #include "ballistics_simulator/common.hpp"
 #include <mutex>
+#include <memory>
 
 class ITargetsProvider;
 
@@ -10,7 +11,7 @@ namespace ballistics_simulator
 {
   // class Target;
   // struct DroneConfig;
-  class ITargetsProvider;
+  // class ITargetsProvider;
 
   struct TargetSnapshot
   {
@@ -21,7 +22,7 @@ namespace ballistics_simulator
   class TargetSelector
   {
   public:
-    TargetSelector(ITargetsProvider &targetProvider);
+    TargetSelector(std::shared_ptr<ITargetsProvider> targetsProvider);
     void init(const DroneConfig &droneConfig);
     SelectedTarget selectTarget(DroneTelemetry droneTelemetry, DropParameters dropParameters);
 
@@ -29,7 +30,7 @@ namespace ballistics_simulator
     std::mutex dataMutex;
 
     const DroneConfig *droneConfig;
-    ITargetsProvider *targetProvider;
+    std::shared_ptr<ITargetsProvider> targetsProvider;
     float acceleration;
     float fullAccelerationTime;
     static float calcReEntryPath(
