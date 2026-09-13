@@ -145,6 +145,11 @@ def generate_launch_description():
                 executable="checker_data_provider_node",
                 parameters=[],
             ),
-            mavros_node,
+            Node(
+                package="ballistics_simulator",
+                executable="autopilot_node",
+                parameters=[],
+            ),
+            # mavros_node,
         ]
     )

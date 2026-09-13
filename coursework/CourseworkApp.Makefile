@@ -9,14 +9,21 @@ CourseworkApp/ardu-cli:
 	cd ./coursework && \
 	docker compose exec ardupilot-sitl bash
 
-CourseworkApp/build:
-	cd ./coursework/robot_ws && \
-	docker compose up -d --build ardupilot-sitl
-	# ros2-dev
-
 CourseworkApp/up:
 	cd ./coursework/robot_ws && \
-	docker compose up -d
+	docker compose up 
+	#-d --build ardupilot-sitl
+	# ros2-dev
+
+CourseworkApp/build:
+	cd ./coursework/robot_ws && \
+	docker compose up -d ros2-dev
+
+CourseworkApp/launch:
+	docker exec ros2_jazzy_rpi5 make launch
+
+CourseworkApp/checker:
+	docker exec ros2_jazzy_rpi5 make checker
 
 # CourseworkApp/build:
 # 	. /opt/ros/jazzy/setup.bash

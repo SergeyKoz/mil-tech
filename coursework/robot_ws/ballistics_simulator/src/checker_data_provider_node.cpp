@@ -1,11 +1,14 @@
 #include <rclcpp/logging.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include "ballistics_simulator/msg/cell_observation.hpp"
-#include "ballistics_simulator/msg/enemy_down.hpp"
-#include "ballistics_simulator/msg/local_scan.hpp"
-#include "ballistics_simulator/msg/move_command.hpp"
+// #include "ballistics_simulator/msg/cell_observation.hpp"
+// #include "ballistics_simulator/msg/enemy_down.hpp"
+// #include "ballistics_simulator/msg/local_scan.hpp"
+// #include "ballistics_simulator/msg/move_command.hpp"
 #include "ballistics_simulator/msg/student_status.hpp"
-#include "ballistics_simulator/srv/payload_trigger.hpp"
+// #include "ballistics_simulator/srv/payload_trigger.hpp"
+#include "ballistics_simulator/msg/drone_config.hpp"
+#include "ballistics_simulator/msg/ammo_config.hpp"
+#include "ballistics_simulator/msg/telemetry.hpp"
 #include "ballistics_simulator/state_qos.hpp"
 #include "ballistics_simulator/world_explorer.hpp"
 #include "ballistics_simulator/checker_uart_listener.hpp"
@@ -14,6 +17,9 @@
 
 namespace
 {
+    constexpr auto kDroneConfigTopic = "/robot/drone_config";
+    constexpr auto kAmmoConfigTopic = "/robot/ammo_config";
+    constexpr auto kTelementyConfigTopic = "/robot/telemetry";
 
     // constexpr auto kScanTopic = "/robot/local_scan";
     // constexpr auto kMoveTopic = "/robot/cmd_move";
@@ -38,18 +44,22 @@ class CheckerDataProviderNode final : public rclcpp::Node, public IUartListener
 {
 public:
     CheckerDataProviderNode()
-        : Node("checker_data_provider_node"), uartListener(ballistics_simulator::CheckerUARTListener("/dev/ttyAMA2")), gpioController(ballistics_simulator::CheckerGPIOController("gpiochip0", 24, 23))
+        : Node("checker_datpia_provider_node"), uartListener(ballistics_simulator::CheckerUARTListener("/dev/ttyAMA2")), gpioController(ballistics_simulator::CheckerGPIOController("gpiochip0", 24, 23))
     {
         const auto qos = rclcpp::QoS{10};
 
         const auto state_qos = ballistics_simulator::make_state_qos();
 
+        droneConfigPublicher = create_publisher<ballistics_simulator::msg::DroneConfig>(kDroneConfigTopic, state_qos);
+        ammoConfigPublicher = create_publisher<ballistics_simulator::msg::AmmoConfig>(kAmmoConfigTopic, state_qos);
+        telemetryPublicher = create_publisher<ballistics_simulator::msg::Telemetry>(kTelementyConfigTopic, state_qos);
+        // gpioset gpiochip0 24=1 --mode=time --sec=10
+        gpioController.init();
+        gpioController.start();
+
         uartListener.init();
         uartListener.addListener(*this);
         uartListener.start();
-
-        gpioController.init();
-        gpioController.start();
     }
 
     auto updateTelemetry(const dlink::Telemetry &telemetry) -> void
@@ -64,6 +74,28 @@ public:
         //     float dir;      // курс (напрямок польоту), радіани
         //     uint8_t state;  // стан стейт-машини (0..4, як у DZ3)
         // };
+
+        ballistics_simulator::msg::Telemetry msg;
+        msg.t_ms = telemetry.t_ms;
+        msg.x = telemetry.z;
+        msg.y = telemetry.y;
+        msg.z = telemetry.z;
+        msg.vx = telemetry.vx;
+        msg.vy = telemetry.vy;
+        msg.speed = telemetry.speed;
+        msg.dir = telemetry.speed;
+        msg.state = telemetry.dir;
+        telemetryPublicher->publish(msg);
+
+        // int32 t_ms
+        // float32 x
+        // float32 y
+        // float32 z
+        // float32 vx
+        // float32 vy
+        // float32 speed
+        // float32 dir
+        // int32 state
 
         RCLCPP_INFO(get_logger(),
                     "telemetry t=%d x,y,z=%.2f,%.2f,%.2f vx,vy,speed=%.2f,%.2f,%.2f dir=%.2f state=%d",
@@ -174,7 +206,7 @@ public:
         //     float x, y;  // поточна позиція цілі, метри
         // };
 
-        RCLCPP_INFO(get_logger(), "target id=%d x,y=%.2f,%.2f", targetPosition.id, targetPosition.x, targetPosition.y);
+        // RCLCPP_INFO(get_logger(), "target id=%d x,y=%.2f,%.2f", targetPosition.id, targetPosition.x, targetPosition.y);
 
         // auto *targets = dynamic_cast<CheckerTargetProvider *>(targetProvider.get());
 
@@ -201,6 +233,15 @@ public:
                     ammoConfig.lift,
                     ammoConfig.hitRadius,
                     ammoConfig.nTargets);
+
+        ballistics_simulator::msg::AmmoConfig msg;
+        msg.name = ammoConfig.name;
+        msg.mass = ammoConfig.mass;
+        msg.drag = ammoConfig.drag;
+        msg.lift = ammoConfig.lift;
+        msg.hit_radius = ammoConfig.hitRadius;
+        msg.targets = ammoConfig.nTargets;
+        ammoConfigPublicher->publish(msg);
 
         // if (isConfigured) {
         //     return;
@@ -251,6 +292,13 @@ public:
         //     float timeScale;  // прискорення симуляції (1 = реальний час; задається аргументом чекера)
         // };
 
+        //         float32 attack_speed
+        // float32 acceleration_path
+        // float32 angular_speed
+        // float32 turn_threshold
+        // float32 time_step
+        // float32 time_scale
+
         RCLCPP_INFO(get_logger(),
                     "drone config attackSpeed=%.2f accelerationPath=%.2f angularSpeed=%.2f turnThreshold=%.2f timeStep=%.2f timeScale=%.2f",
                     droneConfig.attackSpeed,
@@ -260,22 +308,14 @@ public:
                     droneConfig.timeStep,
                     droneConfig.timeScale);
 
-        // if (isConfigured) {
-        //     return;
-        // }
-
-        // auto config = configLoader->getConfig();
-
-        // config.attackSpeed = droneConfig.attackSpeed;
-        // config.accelerationPath = droneConfig.accelerationPath;
-        // config.angularSpeed = droneConfig.angularSpeed;
-        // config.turnThreshold = droneConfig.turnThreshold;
-        // config.simTimeStep = droneConfig.timeStep;
-        // config.timeScale = droneConfig.timeScale;
-
-        // dynamic_cast<CheckerConfigLoader *>(configLoader.get())->setConfig(config);
-
-        // isConfigured = isDroneConfigReady(config);
+        ballistics_simulator::msg::DroneConfig msg;
+        msg.attack_speed = droneConfig.attackSpeed;
+        msg.acceleration_path = droneConfig.accelerationPath;
+        msg.angular_speed = droneConfig.angularSpeed;
+        msg.turn_threshold = droneConfig.turnThreshold;
+        msg.time_step = droneConfig.timeStep;
+        msg.time_scale = droneConfig.timeScale;
+        droneConfigPublicher->publish(msg);
     }
 
     auto updateControl(const dlink::Control &control) -> void
@@ -287,7 +327,7 @@ public:
         //     float turnRate;  // швидкість повороту, [-1..1] (1 = макс. вліво, -1 = вправо)
         // };
 
-        RCLCPP_INFO(get_logger(), "control accel=%.2f turnRate=%.2f", control.accel, control.turnRate);
+        // RCLCPP_INFO(get_logger(), "control accel=%.2f turnRate=%.2f", control.accel, control.turnRate);
 
         // DEBUG("Control command: (accel:" << control.accel << " turnRate:" << control.turnRate << ")");
     }
@@ -309,6 +349,9 @@ private:
 
     ballistics_simulator::CheckerUARTListener uartListener;
     ballistics_simulator::CheckerGPIOController gpioController;
+    rclcpp::Publisher<ballistics_simulator::msg::DroneConfig>::SharedPtr droneConfigPublicher;
+    rclcpp::Publisher<ballistics_simulator::msg::AmmoConfig>::SharedPtr ammoConfigPublicher;
+    rclcpp::Publisher<ballistics_simulator::msg::Telemetry>::SharedPtr telemetryPublicher;
 
     // ballistics_simulator::WorldExplorer worldExplorer;
     // WorldExplorerState state = WorldExplorerState::EXPLORING;

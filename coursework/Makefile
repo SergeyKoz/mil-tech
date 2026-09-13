@@ -1,63 +1,51 @@
 SHELL := /bin/bash
 SCENARIO ?= branching_trench
 
-CourseworkApp/build:
+.PHONY: checker
+
+build:	
 	. /opt/ros/jazzy/setup.bash
 	cd ./robot_ws && \
 	colcon build --symlink-install --packages-select ballistics_simulator
-
-CourseworkApp/launch: CourseworkApp/build
+# --cmake-args -DCMAKE_BUILD_TYPE=Debug
+launch: build
 	cd ./robot_ws && \
 	source install/setup.bash && \
 	ros2 launch ballistics_simulator system.launch.py scenario:=$(SCENARIO).yaml
-	# ros2 launch ballistics_simulator system.launch.py scenario:=training_corridor.yaml
-	# ros2 launch ballistics_simulator system.launch.py scenario:=dead_end_bunker.yaml
-	# ros2 launch ballistics_simulator system.launch.py scenario:=small_rooms.yaml
 
-CourseworkApp/checker:
+checker:
 	./checker/checker_pi_armv6 2 --hw --uart /dev/ttyAMA0 --gpiochip gpiochip0 --start-line 27 --drop-line 22
 
-
-CourseworkApp/build-ci:
-	cd ./coursework/robot_ws && \
-	colcon build --symlink-install --packages-select ballistics_simulator
-
-CourseworkApp/rqt:
+rqt:
 	ros2 run rqt_gui rqt_gui
 
-CourseworkApp/test: CourseworkApp/build
+test: build
 	cd ./coursework/robot_ws && \
 	source install/setup.bash && \
 	colcon test --packages-select ballistics_simulator && \
 	colcon test-result --verbose
 
-CourseworkApp/tests-ci: CourseworkApp/build-ci
-	cd ./coursework/robot_ws && \
-	source install/setup.bash && \
-	colcon test --packages-select ballistics_simulator && \
-	colcon test-result --verbose
-
-CourseworkApp/bag_init:
+bag_init:
 	cd ./coursework && \
 	rm -rf bags/
 	mkdir -p bags/
 
-CourseworkApp/bag_record:	
+bag_record:	
 	cd ./coursework/robot_ws && \
 	source install/setup.bash && \
 	ros2 bag record -a -o ../bags/$(SCENARIO)
 
-CourseworkApp/bag_info:
+bag_info:
 	cd ./coursework/robot_ws && \
 	source install/setup.bash && \
 	ros2 bag info ../bags/$(SCENARIO)
 
-CourseworkApp/bag_play:
+bag_play:
 	cd ./coursework/robot_ws && \
 	source install/setup.bash && \
 	ros2 bag play ../bags/$(SCENARIO)
 
-CourseworkApp/bag_watch_robot_metrics:
+bag_watch_robot_metrics:
 	cd ./coursework/robot_ws && \
 	source install/setup.bash && \
 	ros2 topic echo /robot/metrics

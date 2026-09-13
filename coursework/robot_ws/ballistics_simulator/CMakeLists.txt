@@ -26,10 +26,14 @@ rosidl_generate_interfaces(
     "msg/RobotMetrics.msg"
     "msg/RobotResult.msg"
     "msg/StudentStatus.msg"
+    "msg/DroneConfig.msg"
+    "msg/AmmoConfig.msg"
+    "msg/Telemetry.msg" 
     "srv/PayloadTrigger.srv")
 
 ament_auto_add_library(underground_world_core src/scenario_loader.cpp src/world_model.cpp
-                       src/world_explorer.cpp src/checker_uart_listener.cpp src/checker_gpio_controller.cpp)
+                       src/world_explorer.cpp src/checker_uart_listener.cpp src/checker_gpio_controller.cpp src/autopilot.cpp
+                       src/solvers/table_solver.cpp src/solvers/ballistic_table.cpp)
 target_include_directories(underground_world_core PUBLIC include ${GPIOD_INCLUDE_DIRS})
 
 target_link_libraries(underground_world_core ${GPIOD_LIBRARIES})
@@ -57,6 +61,12 @@ target_link_libraries(checker_data_provider_node underground_world_core)
 
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
 target_link_libraries(checker_data_provider_node "${cpp_typesupport_target}")
+
+ament_auto_add_executable(autopilot_node src/autopilot_node.cpp)
+target_link_libraries(autopilot_node underground_world_core)
+
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(autopilot_node "${cpp_typesupport_target}")
 
 if(BUILD_TESTING)
     find_package(ament_cmake_gtest REQUIRED)
