@@ -1,9 +1,4 @@
 #include "ballistics_simulator/states/accelerating_state.hpp"
-// #include "states/AcceleratingState.hpp"
-// #include "TargetSelector.hpp"
-// #include "common.hpp"
-// #include "states/DeceleratingState.hpp"
-// #include "states/MovingState.hpp"
 
 namespace ballistics_simulator
 {

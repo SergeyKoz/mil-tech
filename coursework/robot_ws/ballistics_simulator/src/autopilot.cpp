@@ -3,6 +3,11 @@
 #include "interfaces/targets_provider_interface.hpp"
 #include "ballistics_simulator/target_selector.hpp"
 
+#include "ballistics_simulator/states/accelerating_state.hpp"
+#include "ballistics_simulator/states/decelerating_state.hpp"
+#include "ballistics_simulator/states/moving_state.hpp"
+#include "ballistics_simulator/states/stopped_state.hpp"
+#include "ballistics_simulator/states/turning_state.hpp"
 // #include "DroneAutopilot.hpp"
 // #include "interfaces/IConfigLoader.hpp"
 // #include "interfaces/ITargetsProvider.hpp"
@@ -46,6 +51,17 @@ namespace ballistics_simulator
         droneConfig.turnThreshold = config.turnThreshold;
         droneConfig.simTimeStep = config.simTimeStep;
         droneConfig.timeScale = config.timeScale;
+
+        states[DroneStatus::STOPPED] = []()
+        { return std::make_unique<StoppedState>(); };
+        states[DroneStatus::TURNING] = []()
+        { return std::make_unique<TurningState>(); };
+        states[DroneStatus::ACCELERATING] = []()
+        { return std::make_unique<AcceleratingState>(); };
+        states[DroneStatus::DECELERATING] = []()
+        { return std::make_unique<DeceleratingState>(); };
+        states[DroneStatus::MOVING] = []()
+        { return std::make_unique<MovingState>(); };
 
         isConfigured = isDroneConfigReady(config);
     };
@@ -179,16 +195,15 @@ namespace ballistics_simulator
                 throw TargetHit(std::to_string(context->simulationStep->targetIdx));
             }
 
-            //     auto command = states[context->droneTelemetry.state](*targetSelector)->threadExecute(*context);
-            //     context->droneTelemetry.state = command.state;
-            //     DEBUG("Command: " << command.state << " acc: " << command.acceleration << " ang: " << command.angleSpeed
-            //                       << " max: " << command.maxSpeed);
+            auto command = states[context->droneTelemetry.state]()->execute(*context);
+            context->droneTelemetry.state = command.state;
+            log() << "Command: " << command.state << " acc: " << command.acceleration << " ang: " << command.angleSpeed
+                  << " max: " << command.maxSpeed;
 
-            //     float turnPosition = command.angleSpeed > epsilon ? 1.0F : -1.0F;
-            //     float turnRate = std::abs(command.angleSpeed) < epsilon ? 0.0F : turnPosition;
-
-            //     float accelPosition = command.state == ACCELERATING ? 1.0F : -1.0F;
-            //     float accel = command.state != ACCELERATING && command.state != DECELERATING ? 0.F : accelPosition;
+            float turnPosition = command.angleSpeed > epsilon ? 1.0F : -1.0F;
+            float turnRate = std::abs(command.angleSpeed) < epsilon ? 0.0F : turnPosition;
+            float accelPosition = command.state == ACCELERATING ? 1.0F : -1.0F;
+            float accel = command.state != ACCELERATING && command.state != DECELERATING ? 0.F : accelPosition;
 
             //     rpiCheckerUART->writeControl({.accel = accel, .turnRate = turnRate});
         }

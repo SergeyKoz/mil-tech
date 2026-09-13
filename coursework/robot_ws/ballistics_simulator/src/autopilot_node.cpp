@@ -9,7 +9,6 @@
 #include "ballistics_simulator/solvers/table_solver.hpp"
 #include "ballistics_simulator/providers/targets_provider.hpp"
 #include "ballistics_simulator/common.hpp"
-// #include <ament_index_cpp/get_package_share_directory.hpp>
 
 namespace
 {
@@ -29,8 +28,6 @@ public:
         const auto qos = rclcpp::QoS{10};
 
         const auto state_qos = ballistics_simulator::make_state_qos();
-
-        // auto testFilesRepository = std::make_shared<TestFilesRepository>(appConfig.testsRepositoryConfig.path);
 
         autopilot.setLogger([this](const std::string &msg)
                             { RCLCPP_INFO(this->get_logger(), "%s", msg.c_str()); });
@@ -129,13 +126,6 @@ private:
 
     void on_target(const ballistics_simulator::msg::Target &target)
     {
-        // autopilot({.state = ballistics_simulator::STOPPED,
-        //                             .position = {telemetry.x, telemetry.y},
-        //                             .altitude = telemetry.z,
-        //                             .speed = {telemetry.vx, telemetry.vy},
-        //                             .direction = telemetry.dir,
-        //                             .timeSinceStart = static_cast<float>(telemetry.t_ms) / 1000.0F});
-
         // RCLCPP_INFO(get_logger(),
         //             "on target id=%d x,y=%.2f,%.2f",
         //             target.id,
@@ -152,8 +142,6 @@ private:
 
     std::shared_ptr<ballistics_simulator::TargetsProvider> targetsProvider;
     ballistics_simulator::Autopilot autopilot;
-
-    // std::shared_ptr<TestFilesRepository> &testFilesRepository
 };
 
 int main(int argc, char **argv)

@@ -1,12 +1,5 @@
 #include "ballistics_simulator/states/stopped_state.hpp"
 
-// #include "states/StoppedState.hpp"
-// #include <memory>
-// #include "common.hpp"
-// #include "states/AcceleratingState.hpp"
-// #include "states/TurningState.hpp"
-// #include "TargetSelector.hpp"
-
 namespace ballistics_simulator
 {
     auto StoppedState::execute(DroneContext &context) -> DroneCommand

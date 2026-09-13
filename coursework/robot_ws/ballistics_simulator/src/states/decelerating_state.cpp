@@ -1,10 +1,4 @@
 #include "ballistics_simulator/states/decelerating_state.hpp"
-// #include "states/DeceleratingState.hpp"
-// #include "TargetSelector.hpp"
-// #include "DronePhysics.hpp"
-// #include "common.hpp"
-// #include "states/AcceleratingState.hpp"
-// #include "states/StoppedState.hpp"
 
 namespace ballistics_simulator
 {

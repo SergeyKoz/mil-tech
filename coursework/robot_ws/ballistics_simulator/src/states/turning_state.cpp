@@ -1,6 +1,4 @@
 #include "ballistics_simulator/states/turning_state.hpp"
-// #include "states/TurningState.hpp"
-// #include "states/AcceleratingState.hpp"
 
 namespace ballistics_simulator
 {

@@ -110,94 +110,6 @@ public:
                     telemetry.speed,
                     telemetry.dir,
                     telemetry.state);
-
-        // DEBUG("TELEMETRY: " << " state=" << static_cast<int>(telemetry.state) << " x,y=" << telemetry.x << "," << telemetry.y << " "
-        // vx,vy="
-        //                     << telemetry.vx << "," << telemetry.vy << " dir=" << telemetry.dir << " speed=" << telemetry.speed);
-
-        // currentTime = static_cast<float>(telemetry.t_ms) / 1000.0F;  // мілісекунди -> секунди
-
-        // auto droneConfig = configLoader->getConfig();
-
-        // if (!isConfigured) {
-        //     droneConfig.startPos = {telemetry.x, telemetry.y};
-        //     droneConfig.altitude = telemetry.z;
-        //     droneConfig.initialDir = telemetry.dir;
-
-        //     dynamic_cast<CheckerConfigLoader *>(configLoader.get())->setConfig(droneConfig);
-        //     LOG("Drone is ready to start the mission!");
-
-        //     isConfigured = isDroneConfigReady(droneConfig);
-
-        //     if (!isConfigured) {
-        //         return;
-        //     }
-        // }
-
-        // if (!isTargetsDefined) {
-        //     isTargetsDefined = dynamic_cast<CheckerTargetProvider *>(targetProvider.get())->isReady();
-
-        //     if (!isTargetsDefined) {
-        //         return;
-        //     }
-        // }
-
-        // if (isConfigured && isTargetsDefined && !isDropParametersCalculated) {
-        //     dropParams = solver->calcDropParameters(droneConfig.ammo, droneConfig.attackSpeed, droneConfig.altitude);
-        //     isDropParametersCalculated = true;
-
-        //     DEBUG("Drop parameters calculated: time=" << dropParams.time << ", distance=" << dropParams.distance);
-
-        //     targetSelector->init(droneConfig);
-
-        //     context = std::make_unique<DroneContext>(
-        //         DroneContext{.currentTime = 0.F,
-        //                      .simulationStep = {},
-        //                      .droneConfig = &droneConfig,
-        //                      .dronePhysics = {},
-        //                      .droneTelemetry = {.state = STOPPED,
-        //                                         .position = {telemetry.x, telemetry.y},
-        //                                         .altitude = droneConfig.altitude,
-        //                                         .speed = {telemetry.vx, telemetry.vy},
-        //                                         .direction = telemetry.dir,
-        //                                         .timeSinceStart = static_cast<float>(telemetry.t_ms) / 1000.0F},
-        //                      .dropParams = &dropParams,
-        //                      .selectedTarget = {},
-        //                      .turnAngle = 0.F,
-        //                      .acceleration = droneConfig.acceleration(),
-        //                      .angleStep = droneConfig.angularSpeed,
-        //                      .distanceToDropPoint = 0.F});
-        // }
-
-        // if (isConfigured && isTargetsDefined && isDropParametersCalculated) {
-        //     context->droneTelemetry = DroneTelemetry{.state = context->droneTelemetry.state,
-        //                                              .position = {telemetry.x, telemetry.y},
-        //                                              .altitude = droneConfig.altitude,
-        //                                              .speed = {telemetry.vx, telemetry.vy},
-        //                                              .direction = telemetry.dir,
-        //                                              .timeSinceStart = static_cast<float>(telemetry.t_ms) / 1000.0F};
-
-        //     auto simulationStep = calculateSimulationStep();
-
-        //     context->simulationStep = simulationStep.get();
-
-        //     if (isTargetHit(*context)) {
-        //         throw TargetHit(std::to_string(context->simulationStep->targetIdx));
-        //     }
-
-        //     auto command = states[context->droneTelemetry.state](*targetSelector)->threadExecute(*context);
-        //     context->droneTelemetry.state = command.state;
-        //     DEBUG("Command: " << command.state << " acc: " << command.acceleration << " ang: " << command.angleSpeed
-        //                       << " max: " << command.maxSpeed);
-
-        //     float turnPosition = command.angleSpeed > epsilon ? 1.0F : -1.0F;
-        //     float turnRate = std::abs(command.angleSpeed) < epsilon ? 0.0F : turnPosition;
-
-        //     float accelPosition = command.state == ACCELERATING ? 1.0F : -1.0F;
-        //     float accel = command.state != ACCELERATING && command.state != DECELERATING ? 0.F : accelPosition;
-
-        //     rpiCheckerUART->writeControl({.accel = accel, .turnRate = turnRate});
-        // }
     }
 
     auto updateTargetPosition(const dlink::TargetPos &targetPosition) -> void
@@ -252,20 +164,6 @@ public:
         msg.hit_radius = ammoConfig.hitRadius;
         msg.targets = ammoConfig.nTargets;
         ammoConfigPublicher->publish(msg);
-
-        // if (isConfigured) {
-        //     return;
-        // }
-
-        // auto droneConfig = configLoader->getConfig();
-
-        // droneConfig.hitRadius = ammoConfig.hitRadius;
-        // droneConfig.ammo = {.name = &ammoConfig.name[0], .mass = ammoConfig.mass, .drag = ammoConfig.drag, .lift = ammoConfig.lift};
-
-        // dynamic_cast<CheckerConfigLoader *>(configLoader.get())->setConfig(droneConfig);
-        // dynamic_cast<CheckerTargetProvider *>(targetProvider.get())->setTargetsCount(ammoConfig.nTargets);
-
-        // isConfigured = isDroneConfigReady(droneConfig);
     }
 
     auto updateResult(const dlink::Result &result) -> void
