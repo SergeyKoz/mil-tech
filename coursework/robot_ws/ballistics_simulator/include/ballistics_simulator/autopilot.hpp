@@ -38,7 +38,7 @@ namespace ballistics_simulator
     //           std::unique_ptr<ITargetsProvider> targetProvider,
     //           std::unique_ptr<RpiCheckerGPIO> rpiCheckerGPIO,
     //           std::unique_ptr<RpiCheckerUART> rpiCheckerUART);
-    Autopilot();
+    // Autopilot();
 
     auto setConfig(const DroneConfig &config) -> void;
     auto setAmmo(const AmmoConfig &config) -> void;

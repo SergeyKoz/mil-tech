@@ -1,4 +1,5 @@
 #include "ballistics_simulator/autopilot.hpp"
+#include "interfaces/ballistics_solver_interface.hpp"
 
 // #include "DroneAutopilot.hpp"
 // #include "interfaces/IConfigLoader.hpp"
@@ -23,7 +24,8 @@
 namespace ballistics_simulator
 {
 
-    Autopilot::Autopilot() {};
+    // Autopilot::Autopilot() {};
+    Autopilot::Autopilot(std::unique_ptr<IBallisticsSolver> solver) : solver(std::move(solver)) {};
 
     auto Autopilot::setConfig(const DroneConfig &config) -> void
     {

@@ -3,7 +3,6 @@
 
 namespace ballistics_simulator
 {
-
     BallisticTable TableSolver::table;
 
     TableSolver::TableSolver(std::string ballicticTableFile)
