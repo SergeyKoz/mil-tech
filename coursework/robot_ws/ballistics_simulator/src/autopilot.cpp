@@ -23,8 +23,6 @@
 
 namespace ballistics_simulator
 {
-
-    // Autopilot::Autopilot() {};
     Autopilot::Autopilot(std::unique_ptr<IBallisticsSolver> solver) : solver(std::move(solver)) {};
 
     auto Autopilot::setConfig(const DroneConfig &config) -> void
@@ -50,6 +48,8 @@ namespace ballistics_simulator
         {
             return;
         }
+
+        log() << "set ammo";
 
         droneConfig.hitRadius = config.hitRadius;
         droneConfig.ammo = {.name = config.name, .mass = config.mass, .drag = config.drag, .lift = config.lift};
@@ -81,6 +81,10 @@ namespace ballistics_simulator
 
             isConfigured = isDroneConfigReady(droneConfig);
 
+            log() << "droneConfig.altitude " << droneConfig.altitude << " droneConfig.ammo.name " << droneConfig.ammo.name;
+
+            log() << "isConfigured " << isConfigured;
+
             if (!isConfigured)
             {
                 return;
@@ -94,12 +98,16 @@ namespace ballistics_simulator
             //     if (!isTargetsDefined) {
             //         return;
             //     }
+
+            isTargetsDefined = true;
         }
 
         if (isConfigured && isTargetsDefined && !isDropParametersCalculated)
         {
-            //     dropParams = solver->calcDropParameters(droneConfig.ammo, droneConfig.attackSpeed, droneConfig.altitude);
+            dropParams = solver->calcDropParameters(droneConfig.ammo, droneConfig.attackSpeed, droneConfig.altitude);
             isDropParametersCalculated = true;
+
+            log() << "dropParams d: " << dropParams.distance << " t: " << dropParams.time;
 
             //     DEBUG("Drop parameters calculated: time=" << dropParams.time << ", distance=" << dropParams.distance);
 
@@ -155,8 +163,8 @@ namespace ballistics_simulator
         }
     }
 
-    Autopilot::Autopilot(std::unique_ptr<IBallisticsSolver> solver)
-        : solver(std::move(solver)) {};
+    // Autopilot::Autopilot(std::unique_ptr<IBallisticsSolver> solver)
+    //     : solver(std::move(solver)) {};
 
     // DroneAutopilot::DroneAutopilot(std::unique_ptr<IBallisticsSolver> solver,
     //                                std::unique_ptr<IConfigLoader> configLoader,

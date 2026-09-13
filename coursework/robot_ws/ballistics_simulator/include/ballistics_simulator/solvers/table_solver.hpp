@@ -17,4 +17,4 @@ namespace ballistics_simulator
     static BallisticTable table;
     std::string ballicticTableFile;
   };
-}
+} // namespace ballistics_simulator

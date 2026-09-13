@@ -55,10 +55,10 @@ public:
         telemetryPublicher = create_publisher<ballistics_simulator::msg::Telemetry>(kTelementyConfigTopic, state_qos);
         // gpioset gpiochip0 24=1 --mode=time --sec=10
         gpioController.init();
-        gpioController.start();
-
         uartListener.init();
         uartListener.addListener(*this);
+
+        gpioController.start();
         uartListener.start();
     }
 
@@ -75,17 +75,17 @@ public:
         //     uint8_t state;  // стан стейт-машини (0..4, як у DZ3)
         // };
 
-        ballistics_simulator::msg::Telemetry msg;
-        msg.t_ms = telemetry.t_ms;
-        msg.x = telemetry.z;
-        msg.y = telemetry.y;
-        msg.z = telemetry.z;
-        msg.vx = telemetry.vx;
-        msg.vy = telemetry.vy;
-        msg.speed = telemetry.speed;
-        msg.dir = telemetry.speed;
-        msg.state = telemetry.dir;
-        telemetryPublicher->publish(msg);
+        // ballistics_simulator::msg::Telemetry msg;
+        // msg.t_ms = telemetry.t_ms;
+        // msg.x = telemetry.z;
+        // msg.y = telemetry.y;
+        // msg.z = telemetry.z;
+        // msg.vx = telemetry.vx;
+        // msg.vy = telemetry.vy;
+        // msg.speed = telemetry.speed;
+        // msg.dir = telemetry.speed;
+        // msg.state = telemetry.dir;
+        // telemetryPublicher->publish(msg);
 
         // int32 t_ms
         // float32 x
@@ -97,17 +97,17 @@ public:
         // float32 dir
         // int32 state
 
-        RCLCPP_INFO(get_logger(),
-                    "telemetry t=%d x,y,z=%.2f,%.2f,%.2f vx,vy,speed=%.2f,%.2f,%.2f dir=%.2f state=%d",
-                    telemetry.t_ms,
-                    telemetry.x,
-                    telemetry.y,
-                    telemetry.z,
-                    telemetry.vx,
-                    telemetry.vy,
-                    telemetry.speed,
-                    telemetry.dir,
-                    telemetry.state);
+        // RCLCPP_INFO(get_logger(),
+        //             "telemetry t=%d x,y,z=%.2f,%.2f,%.2f vx,vy,speed=%.2f,%.2f,%.2f dir=%.2f state=%d",
+        //             telemetry.t_ms,
+        //             telemetry.x,
+        //             telemetry.y,
+        //             telemetry.z,
+        //             telemetry.vx,
+        //             telemetry.vy,
+        //             telemetry.speed,
+        //             telemetry.dir,
+        //             telemetry.state);
 
         // DEBUG("TELEMETRY: " << " state=" << static_cast<int>(telemetry.state) << " x,y=" << telemetry.x << "," << telemetry.y << " "
         // vx,vy="
@@ -225,9 +225,11 @@ public:
         //     uint8_t nTargets;  // скільки цілей у місії
         // };
 
+        std::string ammoName = ammoConfig.name;
+
         RCLCPP_INFO(get_logger(),
                     "ammo_config name=%s m,d,l=%.2f,%.2f,%.2f hitRadius=%.2f targets=%d",
-                    ammoConfig.name,
+                    ammoName,
                     ammoConfig.mass,
                     ammoConfig.drag,
                     ammoConfig.lift,

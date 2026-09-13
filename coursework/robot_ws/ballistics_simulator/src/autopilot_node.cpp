@@ -43,7 +43,7 @@ private:
     void on_drone_config(const ballistics_simulator::msg::DroneConfig &droneConfig)
     {
         RCLCPP_INFO(get_logger(),
-                    "drone config attackSpeed=%.2f accelerationPath=%.2f angularSpeed=%.2f turnThreshold=%.2f timeStep=%.2f timeScale=%.2f",
+                    "on drone config attackSpeed=%.2f accelerationPath=%.2f angularSpeed=%.2f turnThreshold=%.2f timeStep=%.2f timeScale=%.2f",
                     droneConfig.attack_speed,
                     droneConfig.acceleration_path,
                     droneConfig.angular_speed,
@@ -69,6 +69,16 @@ private:
 
     void on_ammo_config(const ballistics_simulator::msg::AmmoConfig &ammoConfig)
     {
+        // AmmoConfig
+        RCLCPP_INFO(get_logger(),
+                    "on ammo_config name=%s m,d,l=%.2f,%.2f,%.2f hitRadius=%.2f targets=%d",
+                    ammoConfig.name,
+                    ammoConfig.mass,
+                    ammoConfig.drag,
+                    ammoConfig.lift,
+                    ammoConfig.hit_radius,
+                    ammoConfig.targets);
+
         autopilot.setAmmo({
             .name = ammoConfig.name,
             .mass = ammoConfig.mass,
@@ -77,16 +87,6 @@ private:
             .hitRadius = ammoConfig.hit_radius,
             .targetCount = ammoConfig.targets,
         });
-
-        // AmmoConfig
-        RCLCPP_INFO(get_logger(),
-                    "ammo_config name=%s m,d,l=%.2f,%.2f,%.2f hitRadius=%.2f targets=%d",
-                    ammoConfig.name,
-                    ammoConfig.mass,
-                    ammoConfig.drag,
-                    ammoConfig.lift,
-                    ammoConfig.hit_radius,
-                    ammoConfig.targets);
     }
 
     void on_telemetry(const ballistics_simulator::msg::Telemetry &telemetry)
@@ -99,7 +99,7 @@ private:
                                     .timeSinceStart = static_cast<float>(telemetry.t_ms) / 1000.0F});
 
         RCLCPP_INFO(get_logger(),
-                    "telemetry t=%d x,y,z=%.2f,%.2f,%.2f vx,vy,speed=%.2f,%.2f,%.2f dir=%.2f state=%d",
+                    "on telemetry t=%d x,y,z=%.2f,%.2f,%.2f vx,vy,speed=%.2f,%.2f,%.2f dir=%.2f state=%d",
                     telemetry.t_ms,
                     telemetry.x,
                     telemetry.y,
