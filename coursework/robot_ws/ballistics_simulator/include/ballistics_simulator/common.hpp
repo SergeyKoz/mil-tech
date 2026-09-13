@@ -211,13 +211,13 @@ namespace ballistics_simulator
         float distanceToDropPoint;
     };
 
-    // struct DroneCommand
-    // {
-    //     DroneStatus state;
-    //     float angleSpeed;
-    //     float acceleration;
-    //     float maxSpeed;
-    // };
+    struct DroneCommand
+    {
+        DroneStatus state;
+        float angleSpeed;
+        float acceleration;
+        float maxSpeed;
+    };
 
     // enum TestCode
     // {

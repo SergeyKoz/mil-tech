@@ -136,11 +136,11 @@ private:
         //                             .direction = telemetry.dir,
         //                             .timeSinceStart = static_cast<float>(telemetry.t_ms) / 1000.0F});
 
-        RCLCPP_INFO(get_logger(),
-                    "on target id=%d x,y=%.2f,%.2f",
-                    target.id,
-                    target.x,
-                    target.y);
+        // RCLCPP_INFO(get_logger(),
+        //             "on target id=%d x,y=%.2f,%.2f",
+        //             target.id,
+        //             target.x,
+        //             target.y);
 
         targetsProvider->setTarget(target.id, {target.x, target.y}, autopilot.getCurrentTime());
     }

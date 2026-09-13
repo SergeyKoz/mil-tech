@@ -1,8 +1,8 @@
 #pragma once
 
 #include <memory>
-// #include <functional>
-// #include <map>
+#include <functional>
+#include <map>
 #include <stdexcept>
 // #include "interfaces/IUartListener.hpp"
 #include "common.hpp"
@@ -13,7 +13,7 @@
 class IBallisticsSolver;
 // class IConfigLoader;
 class ITargetsProvider;
-// class IDroneState;
+class IDroneState;
 // class RpiConfigLoader;
 // class TargetSelector;
 // class RpiCheckerGPIO;
@@ -81,7 +81,7 @@ namespace ballistics_simulator
     // int uart;
 
     std::unique_ptr<DroneContext> context;
-    // std::map<DroneStatus, std::function<std::unique_ptr<IDroneState>(TargetSelector &)>> states;
+    std::map<DroneStatus, std::function<std::unique_ptr<IDroneState>()>> states;
 
     auto calculateSimulationStep() -> std::unique_ptr<SimStep>;
     static auto isDroneConfigReady(const DroneConfig &droneConfig) -> bool;

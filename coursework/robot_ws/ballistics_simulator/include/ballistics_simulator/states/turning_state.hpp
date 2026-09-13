@@ -1,16 +1,22 @@
 #pragma once
 
-#include "interfaces/IDroneState.hpp"
-#include "common.hpp"
+#include "interfaces/drone_state_interface.hpp"
+#include "ballistics_simulator/common.hpp"
 
-class TargetSelector;
+// class TargetSelector;
 
-class TurningState : public IDroneState {
+namespace ballistics_simulator
+{
+
+  class TurningState : public IDroneState
+  {
   public:
-    TurningState(TargetSelector& targetSelector);
-    [[deprecated]] auto execute(DroneContext& context) -> std::unique_ptr<IDroneState> override;
-    auto threadExecute(DroneContext& context) -> DroneCommand override;
+    // TurningState(TargetSelector& targetSelector);
+    // [[deprecated]] auto execute(DroneContext& context) -> std::unique_ptr<IDroneState> override;
+    auto execute(DroneContext &context) -> DroneCommand override;
 
-  private:
-    TargetSelector* targetSelector;
-};
+    // private:
+    //   TargetSelector* targetSelector;
+  };
+
+} // namespace ballistics_simulator
