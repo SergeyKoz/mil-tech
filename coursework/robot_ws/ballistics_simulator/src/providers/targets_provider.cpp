@@ -42,6 +42,10 @@ namespace ballistics_simulator
         //     Speed speed;
         // };
 
+        // if (index == 2)
+        // {
+        //     log() << "setTarget pos: " << pos.x << "," << pos.y;
+        // }
         // log() << "currentTargets.size=" << currentTargets.size() << " previousTargets.size=" << previousTargets.size() << " time=" << time;
 
         if (!currentTargets.contains(index))
@@ -65,6 +69,7 @@ namespace ballistics_simulator
 
             if (std::abs(currentTime - time) > epsilon)
             {
+
                 // auto previousTtarget = !previousTargets.contains(index) ? std::make_unique<TargetTelemetry>(std::vector<Coord>{Coord{}}, 0)
                 //                                                         : std::move(previousTargets.at(index));
 
@@ -74,30 +79,49 @@ namespace ballistics_simulator
                 // previousTargetsTimes.insert_or_assign(index, currentTime);
                 // previousTargets.insert_or_assign(index, std::move(previousTtarget));
                 ////
-                auto previousTtarget = !previousTargets.contains(index) ? TargetTelemetry{} : previousTargets.at(index);
+                auto previousTarget = !previousTargets.contains(index) ? TargetTelemetry{} : previousTargets.at(index);
 
-                previousTtarget.position = currentTarget.position;
+                // previousTtarget.position = currentTarget.position;
+
+                previousTarget = {.position = currentTarget.position, .speed = previousTarget.speed};
 
                 previousTargetsTimes.insert_or_assign(index, currentTime);
-                previousTargets.insert_or_assign(index, previousTtarget);
+                // previousTargets.insert_or_assign(index, previousTtarget);
+
+                // if (index == 2)
+                // {
+                //     log() << "set prev: pos: " << currentTarget.position.x << "," << currentTarget.position.y;
+                // }
+
+                previousTargets.insert_or_assign(index, TargetTelemetry{.position = currentTarget.position, .speed = previousTarget.speed});
             }
 
             // currentTargetsTimes.insert_or_assign(index, time);
             // currentTarget->setTelemetry({.position = pos, .speed = currentTtargetTelemetry.speed});
 
             currentTargetsTimes.insert_or_assign(index, time);
-            currentTarget.position = pos;
+            // currentTarget.position = pos;
         }
 
         if (currentTargets.contains(index) && previousTargets.contains(index))
         {
             auto dt = currentTargetsTimes.at(index) - previousTargetsTimes.at(index);
 
-            auto currPos = currentTargets.at(index).position;
+            // auto currPos = currentTargets.at(index).position;
             auto prevPos = previousTargets.at(index).position;
 
-            currentTargets.at(index) = {.position = currPos, .speed = {.x = (currPos.x - prevPos.x) / dt, .y = (currPos.y - prevPos.y) / dt}};
+            // if (index == 2)
+            // {
+            //     log() << "dt: " << dt << " currPos: " << pos.x << "," << pos.y << " prevPos: " << prevPos.x << "," << prevPos.y;
+            // }
+
+            currentTargets.at(index) = {.position = pos, .speed = {.x = (pos.x - prevPos.x) / dt, .y = (pos.y - prevPos.y) / dt}};
         }
+
+        // if (index == 2)
+        // {
+        //     log() << "Targets set";
+        // }
 
         // if (currentTargets.contains(index) && previousTargets.contains(index))
         // {

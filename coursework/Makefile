@@ -14,7 +14,7 @@ launch: build
 	ros2 launch ballistics_simulator system.launch.py scenario:=$(SCENARIO).yaml
 
 checker:
-	./checker/checker_pi_armv6 2 --hw --uart /dev/ttyAMA0 --gpiochip gpiochip0 --start-line 27 --drop-line 22
+	./checker/checker_pi_armv6 1 --hw --uart /dev/ttyAMA0 --gpiochip gpiochip0 --start-line 27 --drop-line 22
 
 rqt:
 	ros2 run rqt_gui rqt_gui

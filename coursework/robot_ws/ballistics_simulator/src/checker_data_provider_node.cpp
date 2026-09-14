@@ -86,14 +86,14 @@ public:
 
         ballistics_simulator::msg::Telemetry msg;
         msg.t_ms = telemetry.t_ms;
-        msg.x = telemetry.z;
+        msg.x = telemetry.x;
         msg.y = telemetry.y;
         msg.z = telemetry.z;
         msg.vx = telemetry.vx;
         msg.vy = telemetry.vy;
         msg.speed = telemetry.speed;
-        msg.dir = telemetry.speed;
-        msg.state = telemetry.dir;
+        msg.dir = telemetry.dir;
+        msg.state = telemetry.state;
         telemetryPublicher->publish(msg);
 
         // int32 t_ms

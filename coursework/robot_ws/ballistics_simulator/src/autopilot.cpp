@@ -196,9 +196,11 @@ namespace ballistics_simulator
             }
 
             auto command = states[context->droneTelemetry.state]()->execute(*context);
-            context->droneTelemetry.state = command.state;
-            log() << "Command: " << command.state << " acc: " << command.acceleration << " ang: " << command.angleSpeed
+
+            log() << "Command: " << command.state << " prev state: " << context->droneTelemetry.state << " acc: " << command.acceleration << " ang: " << command.angleSpeed
                   << " max: " << command.maxSpeed;
+
+            context->droneTelemetry.state = command.state;
 
             float turnPosition = command.angleSpeed > epsilon ? 1.0F : -1.0F;
             float turnRate = std::abs(command.angleSpeed) < epsilon ? 0.0F : turnPosition;
@@ -388,6 +390,8 @@ namespace ballistics_simulator
             targetPosition.x + targetSpeed.x * timeToReachPosition,
             targetPosition.y + targetSpeed.y * timeToReachPosition,
         };
+
+        log() << "SimStep: droneDirection: " << droneDirection << " target:" << index << " target pos: " << targetPosition.x << "," << targetPosition.x << " time: " << timeToReachPosition;
 
         context->distanceToDropPoint = dronePosition.distance(predictedTarget) - dropParams.distance;
 

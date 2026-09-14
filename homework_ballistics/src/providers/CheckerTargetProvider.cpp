@@ -33,17 +33,20 @@ auto CheckerTargetProvider::getTimeSteps() -> int
 
 auto CheckerTargetProvider::setTarget(int index, Coord pos, float time) -> void
 {
-    if (!currentTargets.contains(index)) {
+    if (!currentTargets.contains(index))
+    {
         auto curentTtarget = std::make_unique<Target>(std::vector<Coord>{pos}, 0);
         currentTargetsTimes.insert_or_assign(index, time);
         currentTargets.insert_or_assign(index, std::move(curentTtarget));
     }
-    else {
+    else
+    {
         auto currentTime = currentTargetsTimes.at(index);
         auto *currentTarget = currentTargets.at(index).get();
         auto currentTtargetTelemetry = currentTarget->getTelemetry();
 
-        if (std::abs(currentTime - time) > epsilon) {
+        if (std::abs(currentTime - time) > epsilon)
+        {
             auto previousTtarget = !previousTargets.contains(index) ? std::make_unique<Target>(std::vector<Coord>{Coord{}}, 0)
                                                                     : std::move(previousTargets.at(index));
 
@@ -55,10 +58,11 @@ auto CheckerTargetProvider::setTarget(int index, Coord pos, float time) -> void
         }
 
         currentTargetsTimes.insert_or_assign(index, time);
-        currentTarget->setTelemetry({.position = pos, .speed = currentTtargetTelemetry.speed});
+        // currentTarget->setTelemetry({.position = pos, .speed = currentTtargetTelemetry.speed});
     }
 
-    if (currentTargets.contains(index) && previousTargets.contains(index)) {
+    if (currentTargets.contains(index) && previousTargets.contains(index))
+    {
         auto dt = currentTargetsTimes.at(index) - previousTargetsTimes.at(index);
 
         auto currPos = currentTargets.at(index).get()->getTelemetry().position;
