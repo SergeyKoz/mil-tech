@@ -6,7 +6,6 @@
 
 namespace ballistics_simulator
 {
-
     struct Result
     {
         float t;     // час польоту

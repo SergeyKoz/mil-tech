@@ -9,5 +9,4 @@ namespace ballistics_simulator
   public:
     auto execute(DroneContext &context) -> DroneCommand override;
   };
-
 } // namespace ballistics_simulator

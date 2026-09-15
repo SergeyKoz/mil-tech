@@ -15,6 +15,8 @@ find_package(PkgConfig REQUIRED)
 set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 pkg_check_modules(GPIOD REQUIRED libgpiod)
 
+# find_package(geometry_msgs REQUIRED)
+
 # Власні msg/srv описують контракт між world node і керуючою системою.
 find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(
@@ -57,32 +59,36 @@ target_link_libraries(underground_world_node "${cpp_typesupport_target}")
 ament_auto_add_executable(world_explorer_node src/world_explorer_node.cpp)
 target_link_libraries(world_explorer_node underground_world_core)
 
-rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+# rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
 target_link_libraries(world_explorer_node "${cpp_typesupport_target}")
 
 ament_auto_add_executable(trigger_service_node src/trigger_service_node.cpp)
 target_link_libraries(trigger_service_node underground_world_core)
 
-rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+# rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
 target_link_libraries(trigger_service_node "${cpp_typesupport_target}")
 
 ament_auto_add_executable(checker_data_provider_node src/checker_data_provider_node.cpp)
 target_link_libraries(checker_data_provider_node underground_world_core)
 
-rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+# rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
 target_link_libraries(checker_data_provider_node "${cpp_typesupport_target}")
 
 ament_auto_add_executable(autopilot_node src/autopilot_node.cpp)
 target_link_libraries(autopilot_node underground_world_core)
 
-rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+# rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
 target_link_libraries(autopilot_node "${cpp_typesupport_target}")
 
 ament_auto_add_executable(drop_service_node src/drop_service_node.cpp)
 target_link_libraries(drop_service_node underground_world_core)
 
-rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+# rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
 target_link_libraries(drop_service_node "${cpp_typesupport_target}")
+
+ament_auto_add_executable(qgc_telemetry_bridge_node src/qgc_telemetry_bridge_node.cpp)
+target_link_libraries(qgc_telemetry_bridge_node underground_world_core)
+target_link_libraries(qgc_telemetry_bridge_node "${cpp_typesupport_target}")
 
 if(BUILD_TESTING)
     find_package(ament_cmake_gtest REQUIRED)

@@ -59,7 +59,8 @@ def generate_launch_description():
                     # "waypoint",
                     "manual_control",
                     # "state",
-                    "timesync"
+                    "timesync",
+                    "vision_pose"
                 ]
                 # "plugin_denylist": [
                 #     # "companion_process_status",
@@ -72,21 +73,6 @@ def generate_launch_description():
             }
         ],
     )
-
-    # world_node = Node(
-    #     package="ballistics_simulator",
-    #     executable="underground_world_node",
-    #     name="underground_world_node",
-    #     output="screen",
-    #     parameters=[
-    #         {
-    #             "scenario_path": scenario_path,
-    #             "move_commit_period_ms": ParameterValue(
-    #                 move_commit_period_ms, value_type=int
-    #             ),
-    #         }
-    #     ],
-    # )
 
     # Тут можна додати керуючі ноди або інший launch-файл з рішенням.
     return LaunchDescription(
@@ -111,7 +97,7 @@ def generate_launch_description():
             # gcs_url: IP-адреса вашого ПК з QGroundControl та порт 14550 (за замовчуванням у QGC)
             DeclareLaunchArgument(
                 "gcs_url",
-                default_value="udp://@192.168.1.103:14550",  # Вкажіть тут IP вашого комп'ютера з QGC
+                default_value="udp://@192.168.0.103:14550",  # Вкажіть тут IP вашого комп'ютера з QGC
                 description="GCS connection URL (QGroundControl)",
             ),
             DeclareLaunchArgument(
@@ -166,6 +152,12 @@ def generate_launch_description():
                 parameters=[],
                 # arguments=["--ros-args", "--log-level", log_level],
             ),
-            # mavros_node,
+            mavros_node,
+            Node(
+                package="ballistics_simulator",
+                executable="qgc_telemetry_bridge_node",
+                name="qgc_telemetry_bridge_node",
+                output="screen",
+            ),
         ]
     )

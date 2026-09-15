@@ -50,7 +50,7 @@ class CheckerDataProviderNode final : public rclcpp::Node, public IUartListener
 {
 public:
     CheckerDataProviderNode()
-        : Node("checker_datpia_provider_node"), uartListener(ballistics_simulator::CheckerUARTListener("/dev/ttyAMA2")), gpioController(ballistics_simulator::CheckerGPIOController("gpiochip0", 24, 23))
+        : Node("checker_data_provider_node"), uartListener(ballistics_simulator::CheckerUARTListener("/dev/ttyAMA2")), gpioController(ballistics_simulator::CheckerGPIOController("gpiochip0", 24, 23))
     {
         const auto qos = rclcpp::QoS{10};
 
@@ -158,11 +158,11 @@ public:
         //     uint8_t nTargets;  // скільки цілей у місії
         // };
 
-        std::string ammoName = ammoConfig.name;
+        // std::string ammoName = ammoConfig.name;
 
         RCLCPP_INFO(get_logger(),
-                    "ammo_config name=%s m,d,l=%.2f,%.2f,%.2f hitRadius=%.2f targets=%d",
-                    ammoName,
+                    "ammo_config m,d,l=%.2f,%.2f,%.2f hitRadius=%.2f targets=%d",
+                    // ammoName,
                     ammoConfig.mass,
                     ammoConfig.drag,
                     ammoConfig.lift,
