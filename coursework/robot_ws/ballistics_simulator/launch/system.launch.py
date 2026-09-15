@@ -148,6 +148,7 @@ def generate_launch_description():
                 package="ballistics_simulator",
                 executable="checker_data_provider_node",
                 parameters=[],
+                # arguments=["--ros-args", "--log-level", log_level],
             ),
             Node(
                 package="ballistics_simulator",
@@ -157,6 +158,13 @@ def generate_launch_description():
                         "ballistic_table_path": ballistic_table_path,
                     }
                 ],
+                # arguments=["--ros-args", "--log-level", log_level],
+            ),
+            Node(
+                package="ballistics_simulator",
+                executable="drop_service_node",
+                parameters=[],
+                # arguments=["--ros-args", "--log-level", log_level],
             ),
             # mavros_node,
         ]

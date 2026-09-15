@@ -11,6 +11,7 @@
 #include "ballistics_simulator/msg/telemetry.hpp"
 #include "ballistics_simulator/msg/target.hpp"
 #include "ballistics_simulator/msg/control_command.hpp"
+#include "ballistics_simulator/msg/drop_command.hpp"
 #include "ballistics_simulator/state_qos.hpp"
 #include "ballistics_simulator/world_explorer.hpp"
 #include "ballistics_simulator/checker_uart_listener.hpp"
@@ -24,6 +25,7 @@ namespace
     constexpr auto kTelementyTopic = "/checker/telemetry";
     constexpr auto kTargetTopic = "/checker/target";
     constexpr auto kControlCommandTopic = "/checker/control_command";
+    constexpr auto kDropCommandTopic = "/checker/drop_command";
 
     // constexpr auto kScanTopic = "/robot/local_scan";
     // constexpr auto kMoveTopic = "/robot/cmd_move";
@@ -62,6 +64,10 @@ public:
         controlCommandSubscription = create_subscription<ballistics_simulator::msg::ControlCommand>(
             kControlCommandTopic, state_qos, [this](const ballistics_simulator::msg::ControlCommand &command)
             { on_control_command(command); });
+
+        dropCommandSubscription = create_subscription<ballistics_simulator::msg::DropCommand>(
+            kDropCommandTopic, state_qos, [this](const ballistics_simulator::msg::DropCommand &command)
+            { on_drop_command(command); });
 
         // gpioset gpiochip0 24=1 --mode=time --sec=10
         gpioController.init();
@@ -261,6 +267,11 @@ public:
         RCLCPP_INFO(this->get_logger(), "acceleration=%.2f turnRate=%.2f", command.acceleration, command.turn_rate);
     }
 
+    void on_drop_command(const ballistics_simulator::msg::DropCommand &command)
+    {
+        gpioController.drop();
+    }
+
     ~CheckerDataProviderNode() override { uartListener.stop(); }
 
 private:
@@ -283,6 +294,7 @@ private:
     rclcpp::Publisher<ballistics_simulator::msg::Telemetry>::SharedPtr telemetryPublicher;
     rclcpp::Publisher<ballistics_simulator::msg::Target>::SharedPtr targetPublicher;
     rclcpp::Subscription<ballistics_simulator::msg::ControlCommand>::SharedPtr controlCommandSubscription;
+    rclcpp::Subscription<ballistics_simulator::msg::DropCommand>::SharedPtr dropCommandSubscription;
 
     // ballistics_simulator::WorldExplorer worldExplorer;
     // WorldExplorerState state = WorldExplorerState::EXPLORING;

@@ -5,6 +5,7 @@
 #include "ballistics_simulator/msg/telemetry.hpp"
 #include "ballistics_simulator/msg/target.hpp"
 #include "ballistics_simulator/msg/control_command.hpp"
+#include "ballistics_simulator/srv/drop_trigger.hpp"
 #include "ballistics_simulator/state_qos.hpp"
 #include "ballistics_simulator/autopilot.hpp"
 #include "ballistics_simulator/solvers/table_solver.hpp"
@@ -18,6 +19,7 @@ namespace
     constexpr auto kTelemetryTopic = "/checker/telemetry";
     constexpr auto kTargetTopic = "/checker/target";
     constexpr auto kControlCommandTopic = "/checker/control_command";
+    constexpr auto kTriggerService = "/drop/trigger";
 } // namespace
 
 class AutopilotNode final : public rclcpp::Node
@@ -54,6 +56,14 @@ public:
             { on_target(target); });
 
         controlCommandPublicher = create_publisher<ballistics_simulator::msg::ControlCommand>(kControlCommandTopic, state_qos);
+
+        dropTriggerClient = create_client<ballistics_simulator::srv::DropTrigger>(kTriggerService);
+
+        if (!dropTriggerClient->wait_for_service(std::chrono::seconds(3)))
+        {
+            RCLCPP_ERROR(get_logger(), "service %s is not available", kTriggerService);
+            rclcpp::shutdown();
+        }
     }
 
 private:
@@ -116,7 +126,25 @@ private:
                                                                .speed = {telemetry.vx, telemetry.vy},
                                                                .direction = telemetry.dir,
                                                                .timeSinceStart = static_cast<float>(telemetry.t_ms) / 1000.0F};
-        autopilot.processTelemetry(droneTelemetry);
+        try
+        {
+            autopilot.processTelemetry(droneTelemetry);
+        }
+        catch (const ballistics_simulator::TargetHit &e)
+        {
+            auto request = std::make_shared<ballistics_simulator::srv::DropTrigger::Request>();
+            request->target_id = std::stoi(e.what());
+
+            RCLCPP_INFO(get_logger(), "Target: %s hit!", e.what());
+
+            dropTriggerClient->async_send_request(
+                request, [this](rclcpp::Client<ballistics_simulator::srv::DropTrigger>::SharedFuture future)
+                {
+                    const auto response = future.get();
+                    RCLCPP_INFO(get_logger(), "released=%s", response->released ? "true" : "false"); });
+
+            return;
+        }
 
         RCLCPP_INFO(get_logger(),
                     "on telemetry t=%d x,y,z=%.2f,%.2f,%.2f vx,vy,speed=%.2f,%.2f,%.2f dir=%.2f state=%d",
@@ -155,6 +183,7 @@ private:
     rclcpp::Subscription<ballistics_simulator::msg::Telemetry>::SharedPtr telemetrySubscription;
     rclcpp::Subscription<ballistics_simulator::msg::Target>::SharedPtr targetSubscription;
     rclcpp::Publisher<ballistics_simulator::msg::ControlCommand>::SharedPtr controlCommandPublicher;
+    rclcpp::Client<ballistics_simulator::srv::DropTrigger>::SharedPtr dropTriggerClient;
 
     std::shared_ptr<ballistics_simulator::TargetsProvider> targetsProvider;
     ballistics_simulator::Autopilot autopilot;

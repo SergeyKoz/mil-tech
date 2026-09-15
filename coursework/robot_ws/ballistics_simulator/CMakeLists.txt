@@ -31,7 +31,9 @@ rosidl_generate_interfaces(
     "msg/Telemetry.msg"
     "msg/Target.msg"
     "msg/ControlCommand.msg"
-    "srv/PayloadTrigger.srv")
+    "msg/DropCommand.msg"
+    "srv/PayloadTrigger.srv"
+    "srv/DropTrigger.srv")
 
 ament_auto_add_library(underground_world_core src/scenario_loader.cpp src/world_model.cpp
                        src/world_explorer.cpp src/checker_uart_listener.cpp src/checker_gpio_controller.cpp src/autopilot.cpp
@@ -75,6 +77,12 @@ target_link_libraries(autopilot_node underground_world_core)
 
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
 target_link_libraries(autopilot_node "${cpp_typesupport_target}")
+
+ament_auto_add_executable(drop_service_node src/drop_service_node.cpp)
+target_link_libraries(drop_service_node underground_world_core)
+
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(drop_service_node "${cpp_typesupport_target}")
 
 if(BUILD_TESTING)
     find_package(ament_cmake_gtest REQUIRED)
