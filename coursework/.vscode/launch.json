@@ -1,0 +1,154 @@
+{
+  // Launch configurations працюють у devcontainer і використовують GDB з image.
+  // Для ДЗ 5 потрібно буде додати окрему конфігурацію за цим прикладом.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug homework_06: ballistics_cli",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/debug/homework_06/ballistics_cli",
+      "args": [
+        "VOG-17",
+        "10",
+        "100"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "preLaunchTask": "CMake: configure and build ballistic_cli",
+      "setupCommands": [
+        {
+          "description": "Увімкнути pretty-printing для STL типів у GDB.",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "Run Tests homework_06: ballistics_tests",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/debug/homework_06/ballistics_tests",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "CMake: configure and build ballistic_cli",
+      "stopAtEntry": false,
+      "MIMode": "gdb"
+    },
+    {
+      "name": "Debug homework_ballistics: ballistics_app",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/debug/homework_ballistics/ballistics_app",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "preLaunchTask": "CMake: configure and build ballistics_app",
+      "setupCommands": [
+        {
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "Debug homework_ballistics: rpi_simulation_app",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/debug/homework_ballistics/rpi_simulation_app",
+      "args": [
+        "--uart",
+        "/dev/ttyAMA2",
+        "--gpiochip",
+        "gpiochip0",
+        "--start-line",
+        "24",
+        "--drop-line",
+        "23"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "preLaunchTask": "CMake: configure and build rpi_simulation_app",
+      "setupCommands": [
+        {
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "Debug Underground World GTest",
+      "type": "cppdbg",
+      "request": "launch",
+      // Points directly to where colcon builds your test executable
+      "program": "${workspaceFolder}/homework_14/robot_ws/build/underground_world/world_explorer_test",
+      "args": [
+        "--verbose"
+      ],
+      "cwd": "${workspaceFolder}/homework_14/robot_ws",
+      "MIMode": "gdb",
+      // "stopAtEntry": true,
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "CMake: configure and build underground_world",
+      "environment": [
+        {
+          "name": "LD_LIBRARY_PATH",
+          "value": "${workspaceFolder}/homework_14/robot_ws/install/underground_world/lib:/opt/ros/${env:ROS_DISTRO}/lib"
+        },
+        {
+          "name": "AMENT_PREFIX_PATH",
+          "value": "${workspaceFolder}/homework_14/robot_ws/install/underground_world:/opt/ros/${env:ROS_DISTRO}"
+        }
+      ]
+    },
+    {
+      "name": "Debug coursework",
+      "type": "cppdbg",
+      "request": "launch",
+      // Points directly to where colcon builds your test executable
+      "program": "${workspaceFolder}/robot_ws/build/ballistics_simulator/checker_data_provider_node",
+      "args": [
+        "--verbose"
+      ],
+      "cwd": "${workspaceFolder}/robot_ws",
+      "MIMode": "gdb",
+      // "stopAtEntry": true,
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      // "preLaunchTask": "CMake: configure and build underground_world",
+      // "environment": [
+      //   {
+      //     "name": "LD_LIBRARY_PATH",
+      //     "value": "${workspaceFolder}/homework_14/robot_ws/install/underground_world/lib:/opt/ros/${env:ROS_DISTRO}/lib"
+      //   },
+      //   {
+      //     "name": "AMENT_PREFIX_PATH",
+      //     "value": "${workspaceFolder}/homework_14/robot_ws/install/underground_world:/opt/ros/${env:ROS_DISTRO}"
+      //   }
+      // ]
+    },
+  ]
+}

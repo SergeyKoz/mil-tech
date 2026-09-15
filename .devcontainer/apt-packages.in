@@ -49,3 +49,4 @@ ros-jazzy-rmw-cyclonedds-cpp
 libssl-dev
 
 i2c-tools
+socat

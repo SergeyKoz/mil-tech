@@ -1,0 +1,124 @@
+{
+  // VS Code tasks виконуються з кореня workspace у devcontainer terminal.
+  // Тут лишаються тільки базові команди: configure/build і clean.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // Clean task навмисно простий: видаляється тільки локальна build директорія.
+      "label": "CMake: clean build directory",
+      "type": "shell",
+      "command": "rm -rf build",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      // Default build task: Ctrl+Shift+B запускає debug preset, потім build.
+      "label": "CMake: configure and build rpi_simulation_app",
+      "type": "shell",
+      "command": "cmake --preset debug && cmake --build --preset debug --target rpi_simulation_app",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      // Default build task: Ctrl+Shift+B запускає debug preset, потім build.
+      "label": "Rpi Checker: start",
+      "type": "shell",
+      "command": "./homework_ballistics/checker/checker_pi_armv6 2 --hw --uart /dev/ttyAMA0 --gpiochip gpiochip0 --start-line 27 --drop-line 22",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      // Default build task: Ctrl+Shift+B запускає debug preset, потім build.
+      "label": "Rpi Student: start",
+      "type": "shell",
+      "command": "./build/debug/homework_ballistics/rpi_simulation_app --uart /dev/ttyAMA2 --gpiochip gpiochip0 --start-line 24 --drop-line 23",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "CMake: configure and build underground_world",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/homework_14/robot_ws && colcon build --symlink-install --packages-select underground_world --cmake-args -DCMAKE_BUILD_TYPE=Debug",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "CMake: configure and build i2c_app",
+      "type": "shell",
+      "command": "cmake --preset debug && cmake --build --preset debug --target i2c_app",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "CMake: configure and build stm32_server_app",
+      "type": "shell",
+      "command": "cmake --preset debug && cmake --build --preset debug --target stm32_server_app",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+  ]
+}

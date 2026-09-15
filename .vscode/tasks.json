@@ -213,7 +213,25 @@
       // Default build task: Ctrl+Shift+B запускає debug preset, потім build.
       "label": "Rpi Checker: start",
       "type": "shell",
-      "command": "./homework_ballistics/checker/checker_pi_armv6 1 --hw --uart /dev/ttyAMA0 --gpiochip gpiochip0 --start-line 27 --drop-line 22",
+      "command": "./homework_ballistics/checker/checker_pi_armv6 2 --hw --uart /dev/ttyAMA0 --gpiochip gpiochip0 --start-line 27 --drop-line 22",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      // Default build task: Ctrl+Shift+B запускає debug preset, потім build.
+      "label": "Rpi Student: start",
+      "type": "shell",
+      "command": "./build/debug/homework_ballistics/rpi_simulation_app --uart /dev/ttyAMA2 --gpiochip gpiochip0 --start-line 24 --drop-line 23",
       "group": {
         "kind": "build",
         "isDefault": true
