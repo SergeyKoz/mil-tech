@@ -79,10 +79,12 @@ auto DroneAutopilot::updateTelemetry(const dlink::Telemetry &telemetry) -> void
                                                         .dronePhysics = {},
                                                         .droneTelemetry = {.state = STOPPED,
                                                                            .position = {telemetry.x, telemetry.y},
+                                                                           .altitude = droneConfig.altitude,
                                                                            .speed = {telemetry.vx, telemetry.vy},
                                                                            .direction = telemetry.dir,
                                                                            .timeSinceStart = static_cast<float>(telemetry.t_ms) / 1000.0F},
                                                         .dropParams = &dropParams,
+                                                        .selectedTarget = {},
                                                         .turnAngle = 0.F,
                                                         .acceleration = droneConfig.acceleration(),
                                                         .angleStep = droneConfig.angularSpeed,
@@ -92,6 +94,7 @@ auto DroneAutopilot::updateTelemetry(const dlink::Telemetry &telemetry) -> void
     if (isConfigured && isTargetsDefined && isDropParametersCalculated) {
         context->droneTelemetry = DroneTelemetry{.state = context->droneTelemetry.state,
                                                  .position = {telemetry.x, telemetry.y},
+                                                 .altitude = droneConfig.altitude,
                                                  .speed = {telemetry.vx, telemetry.vy},
                                                  .direction = telemetry.dir,
                                                  .timeSinceStart = static_cast<float>(telemetry.t_ms) / 1000.0F};

@@ -3,6 +3,14 @@
 Усі помітні зміни в цьому репо фіксуються тут.
 Формат - [Keep a Changelog](https://keepachangelog.com/uk/1.1.0/), дати в ISO 8601.
 
+
+## 2026-08-24
+
+### Added
+
+- [Home work 1617] Mavlink
+
+
 ## 2026-08-13
 
 ### Added
