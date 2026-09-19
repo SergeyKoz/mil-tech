@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [        
+    // {
+    //   "type": "stlinkgdbtarget",
+    //   "request": "launch",
+    //   "name": "STM32Cube: Launch ST-Link GDB Server",
+    //   "origin": "snippet",
+    //   "cwd": "${workspaceFolder}",
+    //   "preBuild": "${command:st-stm32-ide-debug-launch.build}",
+    //   "runEntry": "main",
+    //   "imagesAndSymbols": [
+    //     {
+    //       "imageFileName": "${command:st-stm32-ide-debug-launch.get-projects-binary-from-context1}"
+    //     }
+    //   ],
+    //   "stm32cubemx": {
+    //     // Замініть на ваш проц (наприклад, STM32F407VG)
+    //     "device": "STM32F411CEU" 
+    //   },
+    // },
+    // {
+    //   "cwd": "${workspaceFolder}",
+    //   "executable": "${workspaceFolder}/build/Debug/homework_18.elf",
+    //   "name": "Debug with ST-Link",
+    //   "request": "launch",
+    //   "type": "cortex-debug",
+    //   "runToEntryPoint": "main",
+    //   "showDevDebugOutput": "none",
+    //   "servertype": "stlink",
+    //   // "gdbPath": "arm-none-eabi-gdb",
+    //   "gdbPath": "/usr/bin/arm-none-eabi-gdb"
+    // },
+    {
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/build/Debug/homework_18.elf",
+      "name": "Debug with ST-Link",
+      "request": "launch",
+      "type": "cortex-debug",
+      "runToEntryPoint": "main",
+      "showDevDebugOutput": "none",
+      "servertype": "stlink",
+      "serverpath": "c:/Users/Admin/AppData/Local/stm32cube/bundles/stlink-gdbserver/7.14.0+st.2/bin/ST-LINK_gdbserver.exe"
+      // "toolchainPath": "C:/Users/Admin/AppData/Local/stm32cube/bundles/gnu-tools-for-stm32/14.3.1+st.2/bin",
+      "gdbPath": "C:/Users/Admin/AppData/Local/stm32cube/bundles/gnu-tools-for-stm32/14.3.1+st.2/bin/arm-none-eabi-gdb.exe"
+      // "gdbPath": "c:\\\\Users\\Admin\\AppData\\Local\\stm32cube\\bundles\\gnu-tools-for-stm32\\14.3.1+st.2\\bin\\arm-none-eabi-gdb.exe"
+    }
+  ]
+}
