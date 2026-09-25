@@ -1,0 +1,62 @@
+FROM ubuntu:22.04
+
+ARG ARDUPILOT_TAG=Copter-4.7.1
+
+ENV TZ=Europe/Kyiv
+ENV DEBIAN_FRONTEND=noninteractive
+
+USER root
+
+# # sim_vehicle.py використовує ip для перевiрки мережi та cleanup.
+# RUN apt-get update \
+#     && apt-get install -y --no-install-recommends iproute2 \
+#     && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    sudo \
+    ca-certificates \
+    iproute2 \
+    tzdata \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -m -s /bin/bash ardupilot \
+    && echo "ardupilot ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+USER ardupilot
+WORKDIR /home/ardupilot
+
+# 3. Додаємо safe.directory (інакше git clone під root всередині Docker викине помилку безпеки)
+RUN git config --global --add safe.directory /home/ardupilot/ardupilot \
+    && git clone --depth 1 --branch "${ARDUPILOT_TAG}" --recurse-submodules \
+      https://github.com/ArduPilot/ardupilot.git /home/ardupilot/ardupilot
+
+WORKDIR /home/ardupilot/ardupilot
+
+# # Офiцiйний dev-base мiстить toolchain, але не мiстить source та готових binary.
+# RUN git clone --depth 1 --branch "${ARDUPILOT_TAG}" --recurse-submodules \
+#       https://github.com/ArduPilot/ardupilot.git /ardupilot \
+#     && cd /ardupilot \
+#     && ./waf configure --board sitl \
+#     && ./waf copter
+
+# 4. Викликаємо нативний скрипт ArduPilot. Він сам встановить правильний ARM64-компілятор для Pi 5
+RUN USER=ardupilot EXTERNALS_GSTREAMER=0 Tools/environment_install/install-prereqs-ubuntu.sh -y \
+    && sudo rm -rf /var/lib/apt/lists/*
+
+# 5. Прописуємо шляхи до встановлених бінарників та тулчейнів
+ENV PATH="/home/ardupilot/.local/bin:/usr/lib/ccache:${PATH}"
+
+# 6. Збираємо SITL
+RUN ./waf configure --board sitl \
+    && ./waf copter
+
+USER root
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+WORKDIR /home/ardupilot/ardupilot
+
+ENTRYPOINT ["/entrypoint.sh"]

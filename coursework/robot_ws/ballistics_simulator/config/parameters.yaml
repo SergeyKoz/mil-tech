@@ -1,0 +1,12 @@
+checker_data_provider_node:
+  ros__parameters:
+    uart_port: "/dev/ttyAMA2"
+    gpio_chip_name: "gpiochip0"
+    start_line: 24
+    drop_line: 23
+
+qgc_bridge_node:
+  ros__parameters:
+      origin_latitude: 50.4501
+      origin_longitude: 30.5234
+      
