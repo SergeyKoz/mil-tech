@@ -1,0 +1,6 @@
+float32 attack_speed
+float32 acceleration_path
+float32 angular_speed
+float32 turn_threshold
+float32 time_step
+float32 time_scale

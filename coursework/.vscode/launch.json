@@ -1,0 +1,38 @@
+{
+  // Launch configurations працюють у devcontainer і використовують GDB з image.
+  // Для ДЗ 5 потрібно буде додати окрему конфігурацію за цим прикладом.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Ballistics Simulator GTest",
+      "type": "cppdbg",
+      "request": "launch",
+      // autopilot_test target_selector_test accelerating_state_test
+      "program": "${workspaceFolder}/robot_ws/build/ballistics_simulator/accelerating_state_test",
+      "args": [
+        "--verbose"
+      ],
+      "cwd": "${workspaceFolder}/robot_ws",
+      "MIMode": "gdb",
+      //   "stopAtEntry": true,
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "CMake: configure and build ballistics_simulator",
+      "environment": [
+        {
+          "name": "LD_LIBRARY_PATH",
+          "value": "${workspaceFolder}/robot_ws/install/ballistics_simulator/lib:/opt/ros/${env:ROS_DISTRO}/lib"
+        },
+        {
+          "name": "AMENT_PREFIX_PATH",
+          "value": "${workspaceFolder}/robot_ws/install/ballistics_simulator:/opt/ros/${env:ROS_DISTRO}"
+        }
+      ]
+    },
+  ]
+}
